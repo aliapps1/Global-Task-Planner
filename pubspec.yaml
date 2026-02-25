@@ -1,5 +1,5 @@
 name: global_task_planner
-description: A smart task planner with local storage.
+description: A smart task planner.
 publish_to: 'none'
 version: 1.0.0+1
 
