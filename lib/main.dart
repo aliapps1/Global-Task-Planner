@@ -9,8 +9,7 @@ class GlobalPlannerApp extends StatefulWidget {
 }
 
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
-  // زبان پیش‌فرض: انگلیسی
-  Locale _locale = Locale('en', '');
+  Locale _locale = Locale('en', ''); // زبان پیش‌فرض
 
   void _changeLanguage(Locale locale) {
     setState(() {
@@ -29,32 +28,58 @@ class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData(primarySwatch: Colors.indigo, useMaterial3: true),
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        useMaterial3: true,
+        brightness: Brightness.light,
+      ),
       home: TaskHomeScreen(onLanguageChange: _changeLanguage),
     );
   }
 }
 
-class TaskHomeScreen extends StatelessWidget {
+class TaskHomeScreen extends StatefulWidget {
   final Function(Locale) onLanguageChange;
   TaskHomeScreen({required this.onLanguageChange});
 
-  // متون ترجمه شده ساده
-  String _getTitle(BuildContext context) {
-    if (Localizations.localeOf(context).languageCode == 'fa') return "برنامه‌ریز جهانی";
-    if (Localizations.localeOf(context).languageCode == 'ar') return "مخطط المهام العالمي";
-    return "Global Task Planner";
+  @override
+  _TaskHomeScreenState createState() => _TaskHomeScreenState();
+}
+
+class _TaskHomeScreenState extends State<TaskHomeScreen> {
+  final List<String> _tasks = []; // لیست تسک‌ها
+  final TextEditingController _taskController = TextEditingController();
+
+  // تابع ترجمه متون ساده
+  String _t(String key) {
+    String lang = Localizations.localeOf(context).languageCode;
+    Map<String, Map<String, String>> values = {
+      'en': {'title': 'Global Planner', 'add': 'Add Task', 'hint': 'Enter task...', 'empty': 'No tasks yet!'},
+      'fa': {'title': 'برنامه‌ریز جهانی', 'add': 'افزودن کار', 'hint': 'عنوان کار...', 'empty': 'هنوز کاری اضافه نشده!'},
+      'ar': {'title': 'مخطط المهام', 'add': 'إضافة مهمة', 'hint': 'أدخل المهمة...', 'empty': 'لا توجد مهام بعد!'},
+    };
+    return values[lang]?[key] ?? key;
+  }
+
+  void _handleAddTask() {
+    if (_taskController.text.isNotEmpty) {
+      setState(() {
+        _tasks.insert(0, _taskController.text);
+        _taskController.clear();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_getTitle(context)),
+        title: Text(_t('title'), style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
         actions: [
           PopupMenuButton<Locale>(
-            icon: Icon(Icons.language),
-            onSelected: onLanguageChange,
+            icon: Icon(Icons.translate),
+            onSelected: widget.onLanguageChange,
             itemBuilder: (context) => [
               PopupMenuItem(value: Locale('en', ''), child: Text("English")),
               PopupMenuItem(value: Locale('fa', ''), child: Text("فارسی")),
@@ -63,22 +88,50 @@ class TaskHomeScreen extends StatelessWidget {
           )
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.all(16),
+      body: Column(
         children: [
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.check_circle_outline, color: Colors.green),
-              title: Text(Localizations.localeOf(context).languageCode == 'fa' ? "اولین کار من" : "My First Task"),
-              subtitle: Text("Priority: High"),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _taskController,
+                    decoration: InputDecoration(
+                      hintText: _t('hint'),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                FloatingActionButton(
+                  onPressed: _handleAddTask,
+                  mini: true,
+                  child: Icon(Icons.add),
+                ),
+              ],
             ),
           ),
+          Expanded(
+            child: _tasks.isEmpty
+                ? Center(child: Text(_t('empty'), style: TextStyle(color: Colors.grey)))
+                : ListView.builder(
+                    itemCount: _tasks.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: ListTile(
+                          title: Text(_tasks[index]),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete_outline, color: Colors.redAccent),
+                            onPressed: () => setState(() => _tasks.removeAt(index)),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-        tooltip: 'Add Task',
       ),
     );
   }
