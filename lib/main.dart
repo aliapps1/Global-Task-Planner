@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // برای حافظه
+import 'dart:convert'; // برای تبدیل لیست به متن
 
 void main() => runApp(GlobalPlannerApp());
 
@@ -9,12 +11,10 @@ class GlobalPlannerApp extends StatefulWidget {
 }
 
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
-  Locale _locale = Locale('en', ''); // زبان پیش‌فرض
+  Locale _locale = Locale('en', '');
 
   void _changeLanguage(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
+    setState(() => _locale = locale);
   }
 
   @override
@@ -28,11 +28,7 @@ class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
+      theme: ThemeData(primarySwatch: Colors.indigo, useMaterial3: true),
       home: TaskHomeScreen(onLanguageChange: _changeLanguage),
     );
   }
@@ -47,19 +43,28 @@ class TaskHomeScreen extends StatefulWidget {
 }
 
 class _TaskHomeScreenState extends State<TaskHomeScreen> {
-  final List<String> _tasks = []; // لیست تسک‌ها
+  List<String> _tasks = [];
   final TextEditingController _taskController = TextEditingController();
 
-  // تابع ترجمه متون ساده
-  String _t(String key) {
-    String lang = Localizations.localeOf(context).languageCode;
-    Map<String, Map<String, String>> values = {
-      'en': {'title': 'Global Planner', 'add': 'Add Task', 'hint': 'Enter task...', 'empty': 'No tasks yet!'},
-      'fa': {'title': 'برنامه‌ریز جهانی', 'add': 'افزودن کار', 'hint': 'عنوان کار...', 'empty': 'هنوز کاری اضافه نشده!'},
-      'ar': {'title': 'مخطط المهام', 'add': 'إضافة مهمة', 'hint': 'أدخل المهمة...', 'empty': 'لا توجد مهام بعد!'},
-    };
-    return values[lang]?[key] ?? key;
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks(); // به محض باز شدن برنامه، کارها را از حافظه بخوان
   }
+
+  // --- توابع حافظه ---
+  _loadTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _tasks = prefs.getStringList('user_tasks') ?? [];
+    });
+  }
+
+  _saveTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('user_tasks', _tasks);
+  }
+  // ------------------
 
   void _handleAddTask() {
     if (_taskController.text.isNotEmpty) {
@@ -67,68 +72,67 @@ class _TaskHomeScreenState extends State<TaskHomeScreen> {
         _tasks.insert(0, _taskController.text);
         _taskController.clear();
       });
+      _saveTasks(); // ذخیره بعد از اضافه کردن
     }
+  }
+
+  void _handleDeleteTask(int index) {
+    setState(() {
+      _tasks.removeAt(index);
+    });
+    _saveTasks(); // ذخیره بعد از حذف کردن
+  }
+
+  String _t(String key) {
+    String lang = Localizations.localeOf(context).languageCode;
+    Map<String, Map<String, String>> values = {
+      'en': {'title': 'Global Planner', 'hint': 'Enter task...', 'empty': 'No tasks!'},
+      'fa': {'title': 'برنامه‌ریز جهانی', 'hint': 'کار جدید...', 'empty': 'لیست خالی است!'},
+      'ar': {'title': 'مخطط المهام', 'hint': 'مهمة جديدة...', 'empty': 'لا يوجد مهام!'},
+    };
+    return values[lang]?[key] ?? key;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_t('title'), style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: Text(_t('title')),
         actions: [
-          PopupMenuButton<Locale>(
-            icon: Icon(Icons.translate),
-            onSelected: widget.onLanguageChange,
-            itemBuilder: (context) => [
-              PopupMenuItem(value: Locale('en', ''), child: Text("English")),
-              PopupMenuItem(value: Locale('fa', ''), child: Text("فارسی")),
-              PopupMenuItem(value: Locale('ar', ''), child: Text("العربية")),
-            ],
+          IconButton(
+            icon: Icon(Icons.language),
+            onPressed: () {
+              // سوئیچ سریع بین زبان‌ها برای تست
+              Locale current = Localizations.localeOf(context);
+              if (current.languageCode == 'en') widget.onLanguageChange(Locale('fa', ''));
+              else if (current.languageCode == 'fa') widget.onLanguageChange(Locale('ar', ''));
+              else widget.onLanguageChange(Locale('en', ''));
+            },
           )
         ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16),
             child: Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _taskController,
-                    decoration: InputDecoration(
-                      hintText: _t('hint'),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                FloatingActionButton(
-                  onPressed: _handleAddTask,
-                  mini: true,
-                  child: Icon(Icons.add),
-                ),
+                Expanded(child: TextField(controller: _taskController, decoration: InputDecoration(hintText: _t('hint')))),
+                IconButton(icon: Icon(Icons.add_box, size: 40, color: Colors.indigo), onPressed: _handleAddTask),
               ],
             ),
           ),
           Expanded(
             child: _tasks.isEmpty
-                ? Center(child: Text(_t('empty'), style: TextStyle(color: Colors.grey)))
+                ? Center(child: Text(_t('empty')))
                 : ListView.builder(
                     itemCount: _tasks.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: ListTile(
-                          title: Text(_tasks[index]),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete_outline, color: Colors.redAccent),
-                            onPressed: () => setState(() => _tasks.removeAt(index)),
-                          ),
-                        ),
-                      );
-                    },
+                    itemBuilder: (context, index) => Card(
+                      child: ListTile(
+                        title: Text(_tasks[index]),
+                        trailing: IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => _handleDeleteTask(index)),
+                      ),
+                    ),
                   ),
           ),
         ],
