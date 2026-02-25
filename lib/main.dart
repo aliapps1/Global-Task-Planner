@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // برای حافظه
-import 'dart:convert'; // برای تبدیل لیست به متن
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart'; // برای کار با تاریخ و ساعت
 
 void main() => runApp(GlobalPlannerApp());
 
@@ -43,69 +43,62 @@ class TaskHomeScreen extends StatefulWidget {
 }
 
 class _TaskHomeScreenState extends State<TaskHomeScreen> {
-  List<String> _tasks = [];
+  List<String> _tasks = []; // متن تسک‌ها
+  List<String> _times = []; // زمان ثبت تسک‌ها
   final TextEditingController _taskController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadTasks(); // به محض باز شدن برنامه، کارها را از حافظه بخوان
+    _loadData();
   }
 
-  // --- توابع حافظه ---
-  _loadTasks() async {
+  _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _tasks = prefs.getStringList('user_tasks') ?? [];
+      _tasks = prefs.getStringList('tasks') ?? [];
+      _times = prefs.getStringList('times') ?? [];
     });
   }
 
-  _saveTasks() async {
+  _saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('user_tasks', _tasks);
+    await prefs.setStringList('tasks', _tasks);
+    await prefs.setStringList('times', _times);
   }
-  // ------------------
 
   void _handleAddTask() {
     if (_taskController.text.isNotEmpty) {
+      String now = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
       setState(() {
         _tasks.insert(0, _taskController.text);
+        _times.insert(0, now);
         _taskController.clear();
       });
-      _saveTasks(); // ذخیره بعد از اضافه کردن
+      _saveData();
     }
   }
 
-  void _handleDeleteTask(int index) {
+  void _handleDelete(int index) {
     setState(() {
       _tasks.removeAt(index);
+      _times.removeAt(index);
     });
-    _saveTasks(); // ذخیره بعد از حذف کردن
-  }
-
-  String _t(String key) {
-    String lang = Localizations.localeOf(context).languageCode;
-    Map<String, Map<String, String>> values = {
-      'en': {'title': 'Global Planner', 'hint': 'Enter task...', 'empty': 'No tasks!'},
-      'fa': {'title': 'برنامه‌ریز جهانی', 'hint': 'کار جدید...', 'empty': 'لیست خالی است!'},
-      'ar': {'title': 'مخطط المهام', 'hint': 'مهمة جديدة...', 'empty': 'لا يوجد مهام!'},
-    };
-    return values[lang]?[key] ?? key;
+    _saveData();
   }
 
   @override
   Widget build(BuildContext context) {
+    String lang = Localizations.localeOf(context).languageCode;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_t('title')),
+        title: Text(lang == 'fa' ? 'برنامه‌ریز' : (lang == 'ar' ? 'المخطط' : 'Planner')),
         actions: [
           IconButton(
             icon: Icon(Icons.language),
             onPressed: () {
-              // سوئیچ سریع بین زبان‌ها برای تست
-              Locale current = Localizations.localeOf(context);
-              if (current.languageCode == 'en') widget.onLanguageChange(Locale('fa', ''));
-              else if (current.languageCode == 'fa') widget.onLanguageChange(Locale('ar', ''));
+              if (lang == 'en') widget.onLanguageChange(Locale('fa', ''));
+              else if (lang == 'fa') widget.onLanguageChange(Locale('ar', ''));
               else widget.onLanguageChange(Locale('en', ''));
             },
           )
@@ -115,25 +108,26 @@ class _TaskHomeScreenState extends State<TaskHomeScreen> {
         children: [
           Padding(
             padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(child: TextField(controller: _taskController, decoration: InputDecoration(hintText: _t('hint')))),
-                IconButton(icon: Icon(Icons.add_box, size: 40, color: Colors.indigo), onPressed: _handleAddTask),
-              ],
+            child: TextField(
+              controller: _taskController,
+              decoration: InputDecoration(
+                hintText: lang == 'fa' ? 'چی تو ذهنته؟' : 'What is on your mind?',
+                suffixIcon: IconButton(icon: Icon(Icons.add_circle, color: Colors.indigo), onPressed: _handleAddTask),
+              ),
             ),
           ),
           Expanded(
-            child: _tasks.isEmpty
-                ? Center(child: Text(_t('empty')))
-                : ListView.builder(
-                    itemCount: _tasks.length,
-                    itemBuilder: (context, index) => Card(
-                      child: ListTile(
-                        title: Text(_tasks[index]),
-                        trailing: IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => _handleDeleteTask(index)),
-                      ),
-                    ),
-                  ),
+            child: ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) => Card(
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: ListTile(
+                  title: Text(_tasks[index]),
+                  subtitle: Text(_times[index], style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  trailing: IconButton(icon: Icon(Icons.delete, color: Colors.red[300]), onPressed: () => _handleDelete(index)),
+                ),
+              ),
+            ),
           ),
         ],
       ),
