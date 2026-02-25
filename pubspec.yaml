@@ -12,7 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   shared_preferences: ^2.2.2 # کتابخانه حافظه
-  intl: ^0.18.1 # کتابخانه مدیریت تاریخ و زمان
+  intl: ^0.20.2 # کتابخانه مدیریت تاریخ و زمان
 
 dev_dependencies:
   flutter_test:
