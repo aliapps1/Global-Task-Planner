@@ -40,6 +40,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Color _selColor = const Color(0xFFFFD700);
   DateTime _selDate = DateTime.now();
 
+  // نام هر زبان به زبان خودش + ترجمه کامل لغات تقویم
   final Map<String, Map<String, String>> _langData = {
     'en': {'n': 'English', 't': 'Elite Strategic Planner', 'l': 'Language', 'p': 'Plan for', 'h': 'High', 'm': 'Normal', 'i': 'Idea'},
     'pt': {'n': 'Português', 't': 'Planejador Elite', 'l': 'Idioma', 'p': 'Plano para', 'h': 'Alto', 'm': 'Normal', 'i': 'Ideia'},
@@ -52,68 +53,45 @@ class _PlannerScreenState extends State<PlannerScreen> {
     'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'l': 'زبان', 'p': 'برنامه برای', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده'},
   };
 
-  // تابع تبدیل به شمسی
+  // تابع تبدیل تاریخ میلادی به شمسی (ساده شده برای پایداری کد)
   String _toSolar(DateTime d) {
     int gY = d.year, gM = d.month, gD = d.day;
     var gDMonth = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
     int gy2 = (gM > 2) ? (gY + 1) : gY;
     int days = 355666 + (365 * gY) + ((gy2 + 3) ~/ 4) - ((gy2 + 99) ~/ 100) + ((gy2 + 399) ~/ 400) + gD + gDMonth[gM - 1];
     int jy = -1595 + (33 * (days ~/ 12053));
-    days %= 12053; jy += 4 * (days ~/ 1461); days %= 1461;
+    days %= 12053;
+    jy += 4 * (days ~/ 1461);
+    days %= 1461;
     if (days > 365) { jy += (days - 1) ~/ 365; days = (days - 1) % 365; }
     int jm = (days < 186) ? 1 + (days ~/ 31) : 7 + ((days - 186) ~/ 30);
     int jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
     return "$jy/$jm/$jd";
   }
 
-  // تابع تبدیل به قمری (تقریبی و پایدار)
-  String _toHijri(DateTime d) {
-    int day = d.day, month = d.month, year = d.year;
-    if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day < 15)))) {
-      // Julian
-    }
-    double jd = ((1461 * (year + 4800 + ((month - 14) / 12).toInt())) / 4).toDouble() +
-               ((367 * (month - 2 - 12 * (((month - 14) / 12).toInt()))) / 12).toDouble() -
-               ((3 * (((year + 4900 + ((month - 14) / 12).toInt())) / 100).toInt())) / 4).toDouble() +
-               day - 32075;
-    double l = jd - 1948440 + 10632;
-    int n = ((l - 1) / 10631).toInt();
-    l = l - 10631 * n + 354;
-    int j = (((10985 - l) / 5316).toInt() * ((50 * l) / 17719).toInt() + ((l / 5670).toInt() * ((43 * l) / 15238).toInt())).toInt();
-    l = l - (((30 - j) / 15).toInt() * ((17719 * j) / 50).toInt() + ((j / 16).toInt() * ((15238 * j) / 43).toInt())).toInt() + 29;
-    int m = ((24 * l) / 709).toInt();
-    int dH = (l - ((709 * m) / 24).toInt()).toInt();
-    int yH = 30 * n + j - 30;
-    return "$yH/$m/$dH";
-  }
-
   @override
   void initState() { super.initState(); _loadData(); }
-  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v11_all_calendars') ?? []); }
-  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v11_all_calendars', _tasks); }
+  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v10_solar') ?? []); }
+  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v10_solar', _tasks); }
 
   @override
   Widget build(BuildContext context) {
-    String solar = _toSolar(_selDate);
-    String hijri = _toHijri(_selDate);
-    String miladi = "${_selDate.day}/${_selDate.month}/${_selDate.year}";
-
-    // تعیین متن تاریخ نمایشی در نوار ابزار
-    String displayDate = miladi;
-    if (widget.lang == 'fa') displayDate = "شمسی: $solar | میلادی: $miladi";
-    if (widget.lang == 'ar') displayDate = "ميلادي: $miladi | هجري: $hijri";
+    String solarDate = _toSolar(_selDate);
+    String miladiDate = "${_selDate.day}/${_selDate.month}/${_selDate.year}";
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0B),
       appBar: AppBar(
-        toolbarHeight: 110,
+        toolbarHeight: 100,
         backgroundColor: Colors.transparent,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FittedBox(child: Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 24, fontWeight: FontWeight.bold))),
-            const SizedBox(height: 6),
-            Text(displayDate, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 4),
+            // نمایش تقویم شمسی بزرگتر برای زبان فارسی
+            Text(widget.lang == 'fa' ? "شمسی: $solarDate | میلادی: $miladiDate" : miladiDate, 
+                 style: const TextStyle(color: Colors.white70, fontSize: 14)),
           ],
         ),
         actions: [
@@ -123,7 +101,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.language, color: Color(0xFFFFD700), size: 40),
+                  icon: const Icon(Icons.language, color: Color(0xFFFFD700), size: 38),
                   onSelected: widget.onLangChange,
                   itemBuilder: (context) => _langData.entries.map((e) => PopupMenuItem(value: e.key, child: Text(e.value['n']!, style: const TextStyle(fontSize: 18)))).toList(),
                 ),
@@ -150,17 +128,15 @@ class _PlannerScreenState extends State<PlannerScreen> {
               controller: _controller,
               style: const TextStyle(fontSize: 22),
               decoration: InputDecoration(
-                hintText: "${_langData[widget.lang]!['p']} ${widget.lang == 'fa' ? solar : (widget.lang == 'ar' ? miladi : miladi)}...",
-                prefixIcon: IconButton(icon: const Icon(Icons.calendar_month, color: Colors.white, size: 35), onPressed: () async {
+                hintText: "${_langData[widget.lang]!['p']} ${widget.lang == 'fa' ? solarDate : miladiDate}...",
+                prefixIcon: IconButton(icon: const Icon(Icons.calendar_month, color: Colors.white, size: 32), onPressed: () async {
                   DateTime? p = await showDatePicker(context: context, initialDate: _selDate, firstDate: DateTime(2020), lastDate: DateTime(2030));
                   if (p != null) setState(() => _selDate = p);
                 }),
-                suffixIcon: IconButton(icon: Icon(Icons.send, color: _selColor, size: 40), onPressed: () {
+                suffixIcon: IconButton(icon: Icon(Icons.send, color: _selColor, size: 38), onPressed: () {
                   if (_controller.text.isNotEmpty) {
-                    String dLabel = miladi;
-                    if (widget.lang == 'fa') dLabel = "$solar (شمسی)";
-                    if (widget.lang == 'ar') dLabel = "$miladi (ميلادي)";
-                    setState(() => _tasks.insert(0, "${_controller.text}|$dLabel|${_selColor.value}"));
+                    String dStr = widget.lang == 'fa' ? "$solarDate (شمسی)" : miladiDate;
+                    setState(() => _tasks.insert(0, "${_controller.text}|$dStr|${_selColor.value}"));
                     _controller.clear(); _saveData();
                   }
                 }),
@@ -176,11 +152,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 var p = _tasks[index].split('|');
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 8))),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 7))),
                   child: ListTile(
-                    title: Text(p[0], style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
+                    title: Text(p[0], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
                     subtitle: Text(p[1], style: const TextStyle(fontSize: 14, color: Colors.white38)),
-                    leading: const Icon(Icons.alarm, size: 30, color: Colors.white24),
+                    leading: const Icon(Icons.alarm, size: 28, color: Colors.white24),
                   ),
                 );
               },
@@ -196,11 +172,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selColor = c),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Column(children: [
-          CircleAvatar(radius: 28, backgroundColor: c, child: isS ? const Icon(Icons.check, size: 32, color: Colors.white) : null),
-          const SizedBox(height: 8),
-          Text(label, style: TextStyle(fontSize: 17, color: isS ? Colors.white : Colors.white54, fontWeight: isS ? FontWeight.bold : FontWeight.normal)),
+          CircleAvatar(radius: 25, backgroundColor: c, child: isS ? const Icon(Icons.check, size: 28, color: Colors.white) : null),
+          const SizedBox(height: 6),
+          Text(label, style: TextStyle(fontSize: 16, color: isS ? Colors.white : Colors.white54, fontWeight: isS ? FontWeight.bold : FontWeight.normal)),
         ]),
       ),
     );
