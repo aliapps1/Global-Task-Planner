@@ -37,7 +37,7 @@ class PlannerScreen extends StatefulWidget {
 class _PlannerScreenState extends State<PlannerScreen> {
   final TextEditingController _controller = TextEditingController();
   List<String> _tasks = [];
-  Color _selColor = const Color(0xFFFFD700);
+  Color _selColor = const Color(0xFFFFD700); // رنگ پیش‌فرض زرد
   DateTime _selDate = DateTime.now();
 
   final Map<String, Map<String, String>> _langData = {
@@ -45,14 +45,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
     'pt': {'n': 'Português', 't': 'Planejador', 'l': 'Idioma', 'p': 'Plano para', 'h': 'Alto', 'm': 'Normal', 'i': 'Ideia'},
     'fr': {'n': 'Français', 't': 'Planificateur', 'l': 'Langue', 'p': 'Plan pour', 'h': 'Haut', 'm': 'Normal', 'i': 'Idée'},
     'de': {'n': 'Deutsch', 't': 'Elite Planer', 'l': 'Sprache', 'p': 'Plan für', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee'},
-    'ru': {'n': 'Русский', 't': 'Планировщик', 'l': 'Язык', 'p': 'Пلان на', 'h': 'Сروчно', 'm': 'Обычно', 'i': 'Идея'},
+    'ru': {'n': 'Русский', 't': 'Планировщик', 'l': 'Язык', 'p': 'План на', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея'},
     'zh': {'n': '中文', 't': '精英规划师', 'l': '语言', 'p': '计划用于', 'h': '紧急', 'm': '普通', 'i': '主意'},
     'it': {'n': 'Italiano', 't': 'Pianificatore', 'l': 'Lingua', 'p': 'Piano per', 'h': 'Alto', 'm': 'Normale', 'i': 'Idea'},
     'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'l': 'اللغة', 'p': 'خطة لـ', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة'},
     'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'l': 'زبان', 'p': 'برنامه برای', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده'},
   };
 
-  // مبدل شمسی
   String _toSolar(DateTime d) {
     int gY = d.year, gM = d.month, gD = d.day;
     var gDMonth = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -66,7 +65,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return "$jy/$jm/$jd";
   }
 
-  // مبدل قمری برای عربی
   String _toHijri(DateTime d) {
     int jd = d.difference(DateTime(1900, 1, 1)).inDays + 2415021;
     int l = jd - 1948440 + 10632;
@@ -82,15 +80,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   @override
   void initState() { super.initState(); _loadData(); }
-  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_final_hybrid') ?? []); }
-  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_final_hybrid', _tasks); }
+  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v16_color_fix') ?? []); }
+  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v16_color_fix', _tasks); }
 
   @override
   Widget build(BuildContext context) {
     String miladi = "${_selDate.day}/${_selDate.month}/${_selDate.year}";
     String displayDate = miladi;
     
-    // مدیریت نمایش تاریخ در هدر
     if (widget.lang == 'fa') displayDate = "شمسی: ${_toSolar(_selDate)} | میلادی: $miladi";
     if (widget.lang == 'ar') displayDate = "هجري: ${_toHijri(_selDate)} | ميلادي: $miladi";
 
@@ -134,9 +131,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _prioBtn(const Color(0xFFFFD700), _langData[widget.lang]!['h']!),
-              _prioBtn(const Color(0xFF448AFF), _langData[widget.lang]!['m']!),
-              _prioBtn(const Color(0xFF9E9E9E), _langData[widget.lang]!['i']!),
+              _prioBtn(const Color(0xFFFFD700), _langData[widget.lang]!['h']!), // زرد
+              _prioBtn(const Color(0xFF448AFF), _langData[widget.lang]!['m']!), // آبی
+              _prioBtn(const Color(0xFF9E9E9E), _langData[widget.lang]!['i']!), // خاکستری
             ],
           ),
           const SizedBox(height: 15),
@@ -149,14 +146,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 hintText: "${_langData[widget.lang]!['p']} ${widget.lang == 'fa' ? _toSolar(_selDate) : (widget.lang == 'ar' ? _toHijri(_selDate) : miladi)}",
                 prefixIcon: Container(
                   margin: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle),
-                  child: IconButton(icon: const Icon(Icons.add, color: Colors.black, size: 24), onPressed: () {
-                    if (_controller.text.isNotEmpty) {
-                      String dLabel = widget.lang == 'fa' ? _toSolar(_selDate) : (widget.lang == 'ar' ? _toHijri(_selDate) : miladi);
-                      setState(() => _tasks.insert(0, "${_controller.text}|$dLabel|${_selColor.value}"));
-                      _controller.clear(); _saveData();
+                  decoration: BoxDecoration(color: _selColor, shape: BoxShape.circle), // تغییر رنگ داینامیک دکمه +
+                  child: IconButton(
+                    icon: Icon(Icons.add, color: _selColor == const Color(0xFF9E9E9E) ? Colors.black : Colors.black, size: 24), 
+                    onPressed: () {
+                      if (_controller.text.isNotEmpty) {
+                        String dLabel = widget.lang == 'fa' ? _toSolar(_selDate) : (widget.lang == 'ar' ? _toHijri(_selDate) : miladi);
+                        setState(() => _tasks.insert(0, "${_controller.text}|$dLabel|${_selColor.value}"));
+                        _controller.clear(); _saveData();
+                      }
                     }
-                  }),
+                  ),
                 ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.calendar_month, color: Colors.white, size: 28),
@@ -198,7 +198,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Widget _prioBtn(Color c, String label) {
     bool isS = _selColor.value == c.value;
     return GestureDetector(
-      onTap: () => setState(() => _selColor = c),
+      onTap: () => setState(() => _selColor = c), // تغییر متغیر رنگ سراسری
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Column(children: [
