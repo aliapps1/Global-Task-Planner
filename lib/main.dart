@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,16 +41,50 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Color _selColor = const Color(0xFFFFD700);
   DateTime _selDate = DateTime.now();
   TimeOfDay _selTime = TimeOfDay.now();
+  Timer? _alarmTimer;
 
   final Map<String, Map<String, String>> _langData = {
-    'en': {'n': 'English', 't': 'Elite Planner', 'l': 'Language', 'p': 'Plan for', 'h': 'High', 'm': 'Normal', 'i': 'Idea', 'at': 'at'},
-    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'l': 'اللغة', 'p': 'خطة لـ', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة', 'at': 'في'},
-    'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'l': 'زبان', 'p': 'برنامه برای', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده', 'at': 'ساعت'},
-    'de': {'n': 'Deutsch', 't': 'Elite Planer', 'l': 'Sprache', 'p': 'Plan für', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee', 'at': 'um'},
-    'ru': {'n': 'Русский', 't': 'Планировщик', 'l': 'Языک', 'p': 'План на', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея', 'at': 'в'},
+    'en': {'n': 'English', 't': 'Elite Planner', 'l': 'Language', 'p': 'Plan for', 'h': 'High', 'm': 'Normal', 'i': 'Idea', 'at': 'at', 'al': 'Time to work!'},
+    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'l': 'اللغة', 'p': 'خطة لـ', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة', 'at': 'في', 'al': 'حان وقت العمل!'},
+    'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'l': 'زبان', 'p': 'برنامه برای', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده', 'at': 'ساعت', 'al': 'وقت انجام برنامه است!'},
   };
 
-  // الگوریتم تبدیل شمسی داخلی (بدون نیاز به پکیج)
+  @override
+  void initState() { 
+    super.initState(); 
+    _loadData();
+    // شروع بررسی لحظه‌ای برای زنگ خوردن
+    _alarmTimer = Timer.periodic(const Duration(seconds: 30), (timer) => _checkAlarms());
+  }
+
+  @override
+  void dispose() { _alarmTimer?.cancel(); super.dispose(); }
+
+  // تابع بررسی ساعت برای زنگ زدن
+  void _checkAlarms() {
+    final now = DateTime.now();
+    final nowStr = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+    
+    for (var task in _tasks) {
+      if (task.contains("($nowStr)") && !task.startsWith("✔")) {
+        _showAlarmDialog(task.split('|')[0]);
+        break;
+      }
+    }
+  }
+
+  void _showAlarmDialog(String title) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Icon(Icons.alarm, color: _selColor, size: 50),
+        content: Text("${_langData[widget.lang]!['al']}\n\n$title", textAlign: TextAlign.center, style: const TextStyle(fontSize: 18)),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
+      ),
+    );
+  }
+
+  // مبدل‌های تاریخ
   String _toSolar(DateTime d) {
     int gY = d.year, gM = d.month, gD = d.day;
     var gDMonth = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -63,49 +98,25 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return "$jy/$jm/$jd";
   }
 
-  // الگوریتم تبدیل قمری داخلی
-  String _toHijri(DateTime d) {
-    int jd = d.difference(DateTime(1900, 1, 1)).inDays + 2415021;
-    int l = jd - 1948440 + 10632;
-    int n = (l - 1) ~/ 10631;
-    l = l - 10631 * n + 354;
-    int j = ((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719) + (l ~/ 5670) * ((43 * l) ~/ 15238);
-    l = l - ((30 - j) ~/ 15) * ((17719 * j) ~/ 50) - (j ~/ 16) * ((15238 * j) ~/ 43) + 29;
-    int m = (24 * l) ~/ 709;
-    int day = l - (709 * m) ~/ 24;
-    int year = 30 * n + j - 30;
-    return "$year/${m + 1}/$day";
-  }
-
-  @override
-  void initState() { super.initState(); _loadData(); }
-  _loadData() async { 
-    final prefs = await SharedPreferences.getInstance(); 
-    setState(() => _tasks = prefs.getStringList('tasks_v18_stable') ?? []); 
-  }
-  _saveData() async { 
-    final prefs = await SharedPreferences.getInstance(); 
-    await prefs.setStringList('tasks_v18_stable', _tasks); 
-  }
+  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v19_alarm') ?? []); }
+  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v19_alarm', _tasks); }
 
   @override
   Widget build(BuildContext context) {
-    String miladi = "${_selDate.day}/${_selDate.month}/${_selDate.year}";
     String timeStr = "${_selTime.hour.toString().padLeft(2, '0')}:${_selTime.minute.toString().padLeft(2, '0')}";
-    String dateLabel = (widget.lang == 'fa') ? _toSolar(_selDate) : (widget.lang == 'ar' ? _toHijri(_selDate) : miladi);
+    String dateLabel = (widget.lang == 'fa') ? _toSolar(_selDate) : "${_selDate.day}/${_selDate.month}/${_selDate.year}";
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0B),
       appBar: AppBar(
         toolbarHeight: 110, backgroundColor: Colors.transparent, elevation: 0,
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          FittedBox(child: Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold))),
-          const SizedBox(height: 5),
+          Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold)),
           Text("${_langData[widget.lang]!['at']} $timeStr | $dateLabel", style: const TextStyle(color: Colors.white70, fontSize: 13)),
         ]),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.language, color: Color(0xFFFFD700), size: 30),
+            icon: const Icon(Icons.language, color: Color(0xFFFFD700)),
             onSelected: widget.onLangChange,
             itemBuilder: (context) => _langData.entries.map((e) => PopupMenuItem(value: e.key, child: Text(e.value['n']!))).toList(),
           ),
@@ -127,7 +138,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               prefixIcon: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: _selColor, shape: BoxShape.circle),
-                child: IconButton(icon: const Icon(Icons.add, color: Colors.black, size: 22), onPressed: () {
+                child: IconButton(icon: const Icon(Icons.add, color: Colors.black), onPressed: () {
                   if (_controller.text.isNotEmpty) {
                     setState(() => _tasks.insert(0, "${_controller.text}|$dateLabel (${_langData[widget.lang]!['at']} $timeStr)|${_selColor.value}"));
                     _controller.clear(); _saveData();
@@ -135,11 +146,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 }),
               ),
               suffixIcon: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: const Icon(Icons.access_time, color: Colors.white70), onPressed: () async {
+                IconButton(icon: const Icon(Icons.access_time), onPressed: () async {
                   TimeOfDay? t = await showTimePicker(context: context, initialTime: _selTime);
                   if (t != null) setState(() => _selTime = t);
                 }),
-                IconButton(icon: const Icon(Icons.calendar_month, color: Colors.white), onPressed: () async {
+                IconButton(icon: const Icon(Icons.calendar_month), onPressed: () async {
                   DateTime? p = await showDatePicker(context: context, initialDate: _selDate, firstDate: DateTime(2020), lastDate: DateTime(2030));
                   if (p != null) setState(() => _selDate = p);
                 }),
@@ -156,10 +167,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
             var p = _tasks[index].split('|');
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 8))),
+              decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 8))),
               child: ListTile(
-                title: Text(p[0], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                subtitle: Text(p[1], style: const TextStyle(fontSize: 12, color: Colors.white38)),
+                title: Text(p[0]),
+                subtitle: Text(p[1], style: const TextStyle(color: Colors.white38)),
                 trailing: IconButton(icon: const Icon(Icons.check_circle, color: Colors.greenAccent), onPressed: () {
                   setState(() => _tasks.removeAt(index)); _saveData();
                 }),
@@ -175,10 +186,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
     bool isS = _selColor.value == c.value;
     return GestureDetector(
       onTap: () => setState(() => _selColor = c),
-      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 15), child: Column(children: [
-        CircleAvatar(radius: 24, backgroundColor: c, child: isS ? const Icon(Icons.check, color: Colors.white) : null),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 13, color: isS ? Colors.white : Colors.white54)),
+      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Column(children: [
+        CircleAvatar(radius: 22, backgroundColor: c, child: isS ? const Icon(Icons.check, color: Colors.white) : null),
+        Text(label, style: TextStyle(fontSize: 12, color: isS ? Colors.white : Colors.white54)),
       ])),
     );
   }
