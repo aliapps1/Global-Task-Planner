@@ -4,33 +4,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() => runApp(const GlobalPlannerApp());
 
 class GlobalPlannerApp extends StatefulWidget {
-  const GlobalEliteApp({super.key}); // نام را برای کلاس حفظ کردیم
+  const GlobalPlannerApp({super.key});
 
   @override
   State<GlobalPlannerApp> createState() => _GlobalPlannerAppState();
 }
 
-class _GlobalEliteAppState extends State<GlobalPlannerApp> {
-  String _currentLang = 'en'; // ۱. انگلیسی ۲. عربی ۳. فارسی
+class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
+  String _currentLang = 'en';
 
   final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'title': 'Elite Global Planner',
-      'hint': 'Next Business Goal...',
+      'title': 'Global Elite Planner',
+      'hint': 'What is your next goal?',
       'empty': 'Your schedule is clear',
-      'time': 'Local Time',
     },
     'ar': {
       'title': 'مخطط النخبة العالمي',
       'hint': 'ما هو هدفك القادم؟',
       'empty': 'جدولك خالي حالياً',
-      'time': 'الوقت المحلي',
     },
     'fa': {
       'title': 'برنامه‌ریز هوشمند جهانی',
       'hint': 'هدف بعدی شما چیست؟',
       'empty': 'لیست برنامه‌های شما خالی است',
-      'time': 'زمان محلی',
     },
   };
 
@@ -80,39 +77,31 @@ class _PlannerScreenState extends State<PlannerScreen> {
     _loadData();
   }
 
-  // گرفتن زمان فعلی بدون نیاز به پکیج خارجی (برای جلوگیری از قرمز شدن)
-  String _getFormattedTime() {
-    final now = DateTime.now();
-    return "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
-  }
-
-  // گرفتن تاریخ روز
-  String _getFormattedDate() {
-    final now = DateTime.now();
-    return "${now.day}/${now.month}/${now.year}";
-  }
-
   _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() => _tasks = prefs.getStringList('tasks_v4') ?? []);
+    setState(() => _tasks = prefs.getStringList('tasks_v3') ?? []);
   }
 
   _saveData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('tasks_v4', _tasks);
+    await prefs.setStringList('tasks_v3', _tasks);
   }
 
   @override
   Widget build(BuildContext context) {
+    // اضافه کردن زمان و تاریخ زنده بدون پکیج اضافی (برای جلوگیری از قرمز شدن)
+    final now = DateTime.now();
+    final timeStr = "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
+    final dateStr = "${now.day}/${now.month}/${now.year}";
+
     return Scaffold(
       appBar: AppBar(
-        // اضافه کردن ساعت زنده به هدر برنامه
+        // تغییر در تایتل برای نمایش ساعت
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.values['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 18)),
-            Text("${widget.values['time']}: ${_getFormattedTime()} - ${_getFormattedDate()}", 
-                 style: const TextStyle(color: Colors.grey, fontSize: 11)),
+            Text(widget.values['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16)),
+            Text("$timeStr - $dateStr", style: const TextStyle(color: Colors.grey, fontSize: 12)),
           ],
         ),
         backgroundColor: Colors.transparent,
@@ -132,30 +121,24 @@ class _PlannerScreenState extends State<PlannerScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.3)),
-              ),
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  hintText: widget.values['hint'],
-                  filled: true,
-                  fillColor: Colors.white10,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.add_circle, color: Color(0xFFFFD700), size: 30),
-                    onPressed: () {
-                      if (_controller.text.isNotEmpty) {
-                        // اضافه کردن تسک همراه با ساعت ثبت (قابلیتی فراتر از نوت گوشی)
-                        setState(() => _tasks.insert(0, "${_controller.text} (${_getFormattedTime()})"));
-                        _controller.clear();
-                        _saveData();
-                      }
-                    },
-                  ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: widget.values['hint'],
+                filled: true,
+                fillColor: Colors.white10,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.add_circle, color: Color(0xFFFFD700)),
+                  onPressed: () {
+                    if (_controller.text.isNotEmpty) {
+                      // اضافه کردن زمان به متن تسک
+                      setState(() => _tasks.insert(0, "${_controller.text} ($timeStr)"));
+                      _controller.clear();
+                      _saveData();
+                    }
+                  },
                 ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
               ),
             ),
           ),
@@ -163,17 +146,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: ListView.builder(
               itemCount: _tasks.length,
               itemBuilder: (context, index) => Card(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white10,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Colors.white10, width: 0.5),
-                ),
                 child: ListTile(
-                  leading: const Icon(Icons.star_border, color: Color(0xFFFFD700), size: 20),
-                  title: Text(_tasks[index], style: const TextStyle(fontSize: 15)),
+                  title: Text(_tasks[index]),
                   trailing: IconButton(
-                    icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
                     onPressed: () {
                       setState(() => _tasks.removeAt(index));
                       _saveData();
