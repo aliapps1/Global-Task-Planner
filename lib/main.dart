@@ -16,18 +16,18 @@ class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
   final Map<String, Map<String, String>> _localizedValues = {
     'en': {
       'title': 'Global Elite Planner',
-      'hint': 'What is your next goal?',
-      'empty': 'Your schedule is clear',
+      'hint': 'Next Business Goal...',
+      'empty': 'Focus on your vision',
     },
     'ar': {
       'title': 'مخطط النخبة العالمي',
-      'hint': 'ما هو هدفك القادم؟',
-      'empty': 'جدولك خالي حالياً',
+      'hint': 'الهدف التجاري القادم...',
+      'empty': 'ركز على رؤيتك',
     },
     'fa': {
       'title': 'برنامه‌ریز هوشمند جهانی',
-      'hint': 'هدف بعدی شما چیست؟',
-      'empty': 'لیست برنامه‌های شما خالی است',
+      'hint': 'هدف بیزینسی بعدی...',
+      'empty': 'روی رویای خود تمرکز کنید',
     },
   };
 
@@ -70,6 +70,7 @@ class PlannerScreen extends StatefulWidget {
 class _PlannerScreenState extends State<PlannerScreen> {
   final TextEditingController _controller = TextEditingController();
   List<String> _tasks = [];
+  Color _selectedPriorityColor = const Color(0xFFFFD700); // پیش‌فرض طلایی
 
   @override
   void initState() {
@@ -79,19 +80,18 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() => _tasks = prefs.getStringList('tasks_v3') ?? []);
+    setState(() => _tasks = prefs.getStringList('tasks_v5_priority') ?? []);
   }
 
   _saveData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('tasks_v3', _tasks);
+    await prefs.setStringList('tasks_v5_priority', _tasks);
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final timeStr = "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
-    final dateStr = "${now.day}/${now.month}/${now.year}";
 
     return Scaffold(
       appBar: AppBar(
@@ -99,7 +99,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.values['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold)),
-            Text("$timeStr - $dateStr", style: const TextStyle(color: Colors.white60, fontSize: 11)),
+            Text("$timeStr - ${now.day}/${now.month}/${now.year}", style: const TextStyle(color: Colors.white60, fontSize: 11)),
           ],
         ),
         backgroundColor: Colors.transparent,
@@ -118,12 +118,24 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
       body: Column(
         children: [
+          // بخش انتخاب اولویت (رنگی)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _priorityCircle(const Color(0xFFFFD700)), // طلایی - High
+                _priorityCircle(Colors.blueAccent),      // آبی - Normal
+                _priorityCircle(Colors.grey),            // خاکستری - Idea
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.3)),
+                border: Border.all(color: _selectedPriorityColor.withOpacity(0.5)),
               ),
               child: TextField(
                 controller: _controller,
@@ -134,10 +146,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.05),
                   suffixIcon: IconButton(
-                    icon: const Icon(Icons.add_circle, color: Color(0xFFFFD700), size: 30),
+                    icon: Icon(Icons.add_circle, color: _selectedPriorityColor, size: 30),
                     onPressed: () {
                       if (_controller.text.isNotEmpty) {
-                        setState(() => _tasks.insert(0, "${_controller.text} [$timeStr]"));
+                        // ذخیره کد رنگ به همراه متن
+                        setState(() => _tasks.insert(0, "${_controller.text}|$timeStr|${_selectedPriorityColor.value}"));
                         _controller.clear();
                         _saveData();
                       }
@@ -151,28 +164,58 @@ class _PlannerScreenState extends State<PlannerScreen> {
           Expanded(
             child: ListView.builder(
               itemCount: _tasks.length,
-              itemBuilder: (context, index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(15),
-                  // اضافه کردن نوار طلایی کنار هر تسک برای حس لوکس بودن
-                  border: const Border(left: BorderSide(color: Color(0xFFFFD700), width: 3)),
-                ),
-                child: ListTile(
-                  title: Text(_tasks[index], style: const TextStyle(color: Colors.white, fontSize: 15)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 22),
-                    onPressed: () {
-                      setState(() => _tasks.removeAt(index));
-                      _saveData();
-                    },
+              itemBuilder: (context, index) {
+                var parts = _tasks[index].split('|');
+                var text = parts[0];
+                var time = parts[1];
+                var colorVal = int.parse(parts[2]);
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border(left: BorderSide(color: Color(colorVal), width: 4)),
                   ),
-                ),
-              ),
+                  child: ListTile(
+                    title: Text(text, style: const TextStyle(color: Colors.white, fontSize: 15)),
+                    subtitle: Text(time, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 22),
+                      onPressed: () {
+                        setState(() => _tasks.removeAt(index));
+                        _saveData();
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _priorityCircle(Color color) {
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPriorityColor = color),
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: _selectedPriorityColor == color ? Colors.white : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            if (_selectedPriorityColor == color)
+              BoxShadow(color: color.withOpacity(0.5), blurRadius: 10)
+          ],
+        ),
       ),
     );
   }
