@@ -12,7 +12,8 @@ class GlobalPlannerApp extends StatefulWidget {
 }
 
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
-  String _currentLang = 'fa';
+  // ۱. زبان پیش‌فرض انگلیسی
+  String _currentLang = 'en'; 
   void _changeLanguage(String lang) => setState(() => _currentLang = lang);
 
   @override
@@ -49,10 +50,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
     'pt': {'n': 'Português', 't': 'Planejador', 'p': 'Plano para', 'at': 'às', 'h': 'Alto', 'm': 'Normal', 'i': 'Ideia', 'l': 'Idioma'},
     'fr': {'n': 'Français', 't': 'Planificateur', 'p': 'Plan pour', 'at': 'à', 'h': 'Haut', 'm': 'Normal', 'i': 'Idée', 'l': 'Langue'},
     'de': {'n': 'Deutsch', 't': 'Planer', 'p': 'Plan für', 'at': 'um', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee', 'l': 'Sprache'},
-    'ru': {'n': 'Русский', 't': 'Планировщик', 'p': 'План на', 'at': 'в', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея', 'l': 'Язык'},
+    'ru': {'n': 'Русский', 't': 'Планировщик', 'p': 'Пلان на', 'at': 'в', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея', 'l': 'Язык'},
     'zh': {'n': '中文', 't': '规划师', 'p': '计划于', 'at': '在', 'h': '紧急', 'm': '普通', 'i': '想法', 'l': '语言'},
     'it': {'n': 'Italiano', 't': 'Pianificatore', 'p': 'Piano per', 'at': 'alle', 'h': 'Alto', 'm': 'Normale', 'i': 'Idea', 'l': 'Lingua'},
-    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'p': 'خطة لـ', 'at': 'في', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة', 'l': 'اللغة'},
+    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'p': 'خطة لـ', 'at': 'في', 'h': 'عالي', 'm': 'عادی', 'i': 'فكرة', 'l': 'اللغة'},
     'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'p': 'برنامه برای', 'at': 'ساعت', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده', 'l': 'زبان'},
   };
 
@@ -60,7 +61,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
   void initState() {
     super.initState();
     _loadData();
-    _alarmTimer = Timer.periodic(const Duration(seconds: 15), (timer) => _checkAlarms());
+    // چک کردن هر ۱۰ ثانیه برای زنگ زدن
+    _alarmTimer = Timer.periodic(const Duration(seconds: 10), (timer) => _checkAlarms());
   }
 
   void _checkAlarms() {
@@ -68,6 +70,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final nowStr = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
     for (var task in _tasks) {
       if (task.contains("($nowStr)") && !task.startsWith("✔")) {
+        // لرزش ممتد و قوی
         HapticFeedback.vibrate();
         _showAlarmDialog(task.split('|')[0]);
         break;
@@ -76,9 +79,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   void _showAlarmDialog(String title) {
-    showDialog(context: context, builder: (context) => AlertDialog(
-      title: const Icon(Icons.alarm, color: Colors.yellow, size: 40),
-      content: Text(title, textAlign: TextAlign.center),
+    showDialog(context: context, barrierDismissible: false, builder: (context) => AlertDialog(
+      backgroundColor: Colors.grey[900],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Icon(Icons.alarm, color: Colors.yellow, size: 50),
+      content: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20)),
       actions: [Center(child: TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")))],
     ));
   }
@@ -96,8 +101,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return "$jy/$jm/$jd";
   }
 
-  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v22') ?? []); }
-  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v22', _tasks); }
+  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v26') ?? []); }
+  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v26', _tasks); }
 
   @override
   Widget build(BuildContext context) {
@@ -137,13 +142,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
             decoration: InputDecoration(
               hintText: "${_langData[widget.lang]!['p']} $dateLabel",
               prefixIcon: IconButton(
-                icon: CircleAvatar(backgroundColor: const Color(0xFF448AFF), child: const Icon(Icons.add, color: Colors.black)),
+                // ۲. رنگ هوشمند دکمه افزودن (برابر با رنگ انتخابی)
+                icon: CircleAvatar(backgroundColor: _selColor, child: const Icon(Icons.add, color: Colors.black)),
                 onPressed: () {
                   if (_controller.text.isNotEmpty) {
-                    String alarmStr = _selTime != null ? " (${_selTime!.hour.toString().padLeft(2, '0')}:${_selTime!.minute.toString().padLeft(2, '0')})" : "";
+                    String tStr = _selTime != null ? " (${_selTime!.hour.toString().padLeft(2, '0')}:${_selTime!.minute.toString().padLeft(2, '0')})" : "";
                     setState(() {
-                      _tasks.insert(0, "${_controller.text}|$dateLabel$alarmStr|${_selColor.value}");
-                      _selTime = null; // مشکل تکرار زمان اینجا حل شد
+                      _tasks.insert(0, "${_controller.text}|$dateLabel$tStr|${_selColor.value}");
+                      _selTime = null; // پاک کردن زمان برای پیام بعدی
                     });
                     _controller.clear(); _saveData();
                   }
