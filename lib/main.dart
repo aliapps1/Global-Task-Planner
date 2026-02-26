@@ -46,31 +46,19 @@ class PlannerScreen extends StatefulWidget {
 class _PlannerScreenState extends State<PlannerScreen> {
   final TextEditingController _controller = TextEditingController();
   List<String> _tasks = [];
-  Color _selectedColor = const Color(0xFFFFD700); // طلایی پیش‌فرض
+  Color _selectedColor = const Color(0xFFFFD700);
 
-  // لیست متون راهنما بر اساس زبان و رنگ اولویت
-  final Map<String, Map<int, String>> _dynamicHints = {
-    'en': {
-      0xFFFFD700: 'Urgent Business Goal...',
-      0x448AFF: 'Daily Routine Task...',
-      0xFF9E9E9E: 'New Creative Idea...',
-    },
-    'ar': {
-      0xFFFFD700: 'هدف تجاري عاجل...',
-      0x448AFF: 'مهمة روتينية يومية...',
-      0xFF9E9E9E: 'فكرة إبداعية جديدة...',
-    },
-    'fa': {
-      0xFFFFD700: 'هدف فوری بیزینسی...',
-      0x448AFF: 'کارهای روتین روزانه...',
-      0xFF9E9E9E: 'ایده خلاقانه جدید...',
-    },
+  // ترجمه برچسب زیر دکمه‌ها و متون راهنما
+  final Map<String, Map<String, String>> _uiStrings = {
+    'en': {'high': 'High', 'normal': 'Normal', 'idea': 'Idea', 'title': 'Global Elite Planner'},
+    'ar': {'high': 'عالي', 'normal': 'عادي', 'idea': 'فكرة', 'title': 'مخطط النخبة العالمي'},
+    'fa': {'high': 'فوری', 'normal': 'معمولی', 'idea': 'ایده', 'title': 'برنامه‌ریز هوشمند جهانی'},
   };
 
-  final Map<String, String> _titles = {
-    'en': 'Global Elite Planner',
-    'ar': 'مخطط النخبة العالمي',
-    'fa': 'برنامه‌ریز هوشمند جهانی',
+  final Map<String, Map<int, String>> _dynamicHints = {
+    'en': {0xFFFFD700: 'Urgent Business Goal...', 0xFF448AFF: 'Daily Routine Task...', 0xFF9E9E9E: 'New Creative Idea...'},
+    'ar': {0xFFFFD700: 'هدف تجاري عاجل...', 0xFF448AFF: 'مهمة روتينية يومية...', 0xFF9E9E9E: 'فكرة إبداعية جديدة...'},
+    'fa': {0xFFFFD700: 'هدف فوری بیزینسی...', 0xFF448AFF: 'کارهای روتین روزانه...', 0xFF9E9E9E: 'ایده خلاقانه جدید...'},
   };
 
   @override
@@ -81,12 +69,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() => _tasks = prefs.getStringList('tasks_v6_final') ?? []);
+    setState(() => _tasks = prefs.getStringList('tasks_v7_final') ?? []);
   }
 
   _saveData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('tasks_v6_final', _tasks);
+    await prefs.setStringList('tasks_v7_final', _tasks);
   }
 
   @override
@@ -99,7 +87,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_titles[widget.lang]!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(_uiStrings[widget.lang]!['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold)),
             Text("$timeStr - ${now.day}/${now.month}/${now.year}", style: const TextStyle(color: Colors.white60, fontSize: 11)),
           ],
         ),
@@ -118,14 +106,15 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
       body: Column(
         children: [
+          // بخش انتخاب اولویت با نوشته زیر دکمه‌ها
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _colorNode(const Color(0xFFFFD700)),
-                _colorNode(Colors.blueAccent),
-                _colorNode(Colors.grey),
+                _colorButton(const Color(0xFFFFD700), _uiStrings[widget.lang]!['high']!),
+                _colorButton(const Color(0xFF448AFF), _uiStrings[widget.lang]!['normal']!),
+                _colorButton(const Color(0xFF9E9E9E), _uiStrings[widget.lang]!['idea']!),
               ],
             ),
           ),
@@ -134,13 +123,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: _selectedColor.withOpacity(0.4)),
+                border: Border.all(color: _selectedColor.withOpacity(0.5)),
               ),
               child: TextField(
                 controller: _controller,
                 decoration: InputDecoration(
-                  // هوشمندسازی متن راهنما بر اساس رنگ و زبان
-                  hintText: _dynamicHints[widget.lang]![_selectedColor.value],
+                  hintText: _dynamicHints[widget.lang]![_selectedColor.value] ?? "...",
                   filled: true,
                   fillColor: Colors.white10,
                   suffixIcon: IconButton(
@@ -184,17 +172,25 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  Widget _colorNode(Color c) {
-    bool isSel = _selectedColor == c;
+  Widget _colorButton(Color c, String label) {
+    bool isSel = _selectedColor.value == c.value;
     return GestureDetector(
       onTap: () => setState(() => _selectedColor = c),
-      child: Container(
-        margin: const EdgeInsets.all(8),
-        width: 32, height: 32,
-        decoration: BoxDecoration(
-          color: c, shape: BoxShape.circle,
-          border: Border.all(color: isSel ? Colors.white : Colors.transparent, width: 2),
-          boxShadow: [if (isSel) BoxShadow(color: c.withOpacity(0.6), blurRadius: 12)],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          children: [
+            Container(
+              width: 35, height: 35,
+              decoration: BoxDecoration(
+                color: c, shape: BoxShape.circle,
+                border: Border.all(color: isSel ? Colors.white : Colors.transparent, width: 2),
+                boxShadow: [if (isSel) BoxShadow(color: c.withOpacity(0.6), blurRadius: 10)],
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(label, style: TextStyle(color: isSel ? Colors.white : Colors.white38, fontSize: 10)),
+          ],
         ),
       ),
     );
