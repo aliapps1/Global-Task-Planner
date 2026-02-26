@@ -89,22 +89,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // اضافه کردن زمان و تاریخ زنده بدون پکیج اضافی (برای جلوگیری از قرمز شدن)
     final now = DateTime.now();
     final timeStr = "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
     final dateStr = "${now.day}/${now.month}/${now.year}";
 
     return Scaffold(
       appBar: AppBar(
-        // تغییر در تایتل برای نمایش ساعت
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.values['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16)),
-            Text("$timeStr - $dateStr", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            Text(widget.values['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold)),
+            Text("$timeStr - $dateStr", style: const TextStyle(color: Colors.white60, fontSize: 11)),
           ],
         ),
         backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.language, color: Color(0xFFFFD700)),
@@ -121,37 +120,49 @@ class _PlannerScreenState extends State<PlannerScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: widget.values['hint'],
-                filled: true,
-                fillColor: Colors.white10,
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.add_circle, color: Color(0xFFFFD700)),
-                  onPressed: () {
-                    if (_controller.text.isNotEmpty) {
-                      // اضافه کردن زمان به متن تسک
-                      setState(() => _tasks.insert(0, "${_controller.text} ($timeStr)"));
-                      _controller.clear();
-                      _saveData();
-                    }
-                  },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.3)),
+              ),
+              child: TextField(
+                controller: _controller,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: widget.values['hint'],
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.05),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.add_circle, color: Color(0xFFFFD700), size: 30),
+                    onPressed: () {
+                      if (_controller.text.isNotEmpty) {
+                        setState(() => _tasks.insert(0, "${_controller.text} [$timeStr]"));
+                        _controller.clear();
+                        _saveData();
+                      }
+                    },
+                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
                 ),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
               ),
             ),
           ),
           Expanded(
             child: ListView.builder(
               itemCount: _tasks.length,
-              itemBuilder: (context, index) => Card(
-                color: Colors.white10,
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              itemBuilder: (context, index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(15),
+                  // اضافه کردن نوار طلایی کنار هر تسک برای حس لوکس بودن
+                  border: const Border(left: BorderSide(color: Color(0xFFFFD700), width: 3)),
+                ),
                 child: ListTile(
-                  title: Text(_tasks[index]),
+                  title: Text(_tasks[index], style: const TextStyle(color: Colors.white, fontSize: 15)),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 22),
                     onPressed: () {
                       setState(() => _tasks.removeAt(index));
                       _saveData();
