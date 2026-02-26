@@ -10,7 +10,7 @@ class GlobalPlannerApp extends StatefulWidget {
 }
 
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
-  String _currentLang = 'en';
+  String _currentLang = 'fa';
   void _changeLanguage(String lang) => setState(() => _currentLang = lang);
 
   @override
@@ -39,21 +39,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
   List<String> _tasks = [];
   Color _selColor = const Color(0xFFFFD700);
   DateTime _selDate = DateTime.now();
-  TimeOfDay _selTime = TimeOfDay.now(); // متغیر جدید برای ذخیره ساعت
+  TimeOfDay _selTime = TimeOfDay.now();
 
   final Map<String, Map<String, String>> _langData = {
     'en': {'n': 'English', 't': 'Elite Planner', 'l': 'Language', 'p': 'Plan for', 'h': 'High', 'm': 'Normal', 'i': 'Idea', 'at': 'at'},
-    'pt': {'n': 'Português', 't': 'Planejador', 'l': 'Idioma', 'p': 'Plano para', 'h': 'Alto', 'm': 'Normal', 'i': 'Ideia', 'at': 'às'},
-    'fr': {'n': 'Français', 't': 'Planificateur', 'l': 'Langue', 'p': 'Plan pour', 'h': 'Haut', 'm': 'Normal', 'i': 'Idée', 'at': 'à'},
-    'de': {'n': 'Deutsch', 't': 'Elite Planer', 'l': 'Sprache', 'p': 'Plan für', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee', 'at': 'um'},
-    'ru': {'n': 'Русский', 't': 'Планировщик', 'l': 'Язык', 'p': 'План на', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея', 'at': 'в'},
-    'zh': {'n': '中文', 't': '精英规划师', 'l': '语言', 'p': '计划用于', 'h': '紧急', 'm': '普通', 'i': '主意', 'at': '在'},
-    'it': {'n': 'Italiano', 't': 'Pianificatore', 'l': 'Lingua', 'p': 'Piano per', 'h': 'Alto', 'm': 'Normale', 'i': 'Idea', 'at': 'alle'},
-    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'l': 'اللغة', 'p': 'خطة لـ', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة', 'at': 'في تمام'},
+    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'l': 'اللغة', 'p': 'خطة لـ', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة', 'at': 'في'},
     'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'l': 'زبان', 'p': 'برنامه برای', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده', 'at': 'ساعت'},
+    'de': {'n': 'Deutsch', 't': 'Elite Planer', 'l': 'Sprache', 'p': 'Plan für', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee', 'at': 'um'},
+    'ru': {'n': 'Русский', 't': 'Планировщик', 'l': 'Языک', 'p': 'План на', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея', 'at': 'в'},
   };
 
-  // تابع تبدیل به شمسی
+  // الگوریتم تبدیل شمسی داخلی (بدون نیاز به پکیج)
   String _toSolar(DateTime d) {
     int gY = d.year, gM = d.month, gD = d.day;
     var gDMonth = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -67,7 +63,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return "$jy/$jm/$jd";
   }
 
-  // تابع تبدیل به قمری
+  // الگوریتم تبدیل قمری داخلی
   String _toHijri(DateTime d) {
     int jd = d.difference(DateTime(1900, 1, 1)).inDays + 2415021;
     int l = jd - 1948440 + 10632;
@@ -83,113 +79,95 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   @override
   void initState() { super.initState(); _loadData(); }
-  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v17_alarm') ?? []); }
-  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v17_alarm', _tasks); }
+  _loadData() async { 
+    final prefs = await SharedPreferences.getInstance(); 
+    setState(() => _tasks = prefs.getStringList('tasks_v18_stable') ?? []); 
+  }
+  _saveData() async { 
+    final prefs = await SharedPreferences.getInstance(); 
+    await prefs.setStringList('tasks_v18_stable', _tasks); 
+  }
 
   @override
   Widget build(BuildContext context) {
     String miladi = "${_selDate.day}/${_selDate.month}/${_selDate.year}";
     String timeStr = "${_selTime.hour.toString().padLeft(2, '0')}:${_selTime.minute.toString().padLeft(2, '0')}";
-    
-    String dateLabel = miladi;
-    if (widget.lang == 'fa') dateLabel = _toSolar(_selDate);
-    else if (widget.lang == 'ar') dateLabel = _toHijri(_selDate);
+    String dateLabel = (widget.lang == 'fa') ? _toSolar(_selDate) : (widget.lang == 'ar' ? _toHijri(_selDate) : miladi);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0B),
       appBar: AppBar(
-        toolbarHeight: 110,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FittedBox(child: Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 24, fontWeight: FontWeight.bold))),
-            const SizedBox(height: 5),
-            Text("${_langData[widget.lang]!['at']} $timeStr | $dateLabel", style: const TextStyle(color: Colors.white70, fontSize: 13)),
-          ],
-        ),
+        toolbarHeight: 110, backgroundColor: Colors.transparent, elevation: 0,
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          FittedBox(child: Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.bold))),
+          const SizedBox(height: 5),
+          Text("${_langData[widget.lang]!['at']} $timeStr | $dateLabel", style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        ]),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.language, color: Color(0xFFFFD700), size: 30),
-            onPressed: () {
-              showModalBottomSheet(context: context, itemBuilder: (context) {
-                return ListView(children: _langData.entries.map((e) => ListTile(title: Text(e.value['n']!), onTap: () { widget.onLangChange(e.key); Navigator.pop(context); })).toList());
-              });
-            },
+            onSelected: widget.onLangChange,
+            itemBuilder: (context) => _langData.entries.map((e) => PopupMenuItem(value: e.key, child: Text(e.value['n']!))).toList(),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _prioBtn(const Color(0xFFFFD700), _langData[widget.lang]!['h']!),
-              _prioBtn(const Color(0xFF448AFF), _langData[widget.lang]!['m']!),
-              _prioBtn(const Color(0xFF9E9E9E), _langData[widget.lang]!['i']!),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _controller,
-              style: const TextStyle(fontSize: 18),
-              decoration: InputDecoration(
-                hintText: "${_langData[widget.lang]!['p']} $dateLabel",
-                prefixIcon: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: _selColor, shape: BoxShape.circle),
-                  child: IconButton(icon: const Icon(Icons.add, color: Colors.black), onPressed: () {
-                    if (_controller.text.isNotEmpty) {
-                      String finalLabel = "$dateLabel (${_langData[widget.lang]!['at']} $timeStr)";
-                      setState(() => _tasks.insert(0, "${_controller.text}|$finalLabel|${_selColor.value}"));
-                      _controller.clear(); _saveData();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Alarm set for $timeStr")));
-                    }
-                  }),
-                ),
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(icon: const Icon(Icons.access_time, color: Colors.white70), onPressed: () async {
-                      TimeOfDay? t = await showTimePicker(context: context, initialTime: _selTime);
-                      if (t != null) setState(() => _selTime = t);
-                    }),
-                    IconButton(icon: const Icon(Icons.calendar_month, color: Colors.white), onPressed: () async {
-                      DateTime? p = await showDatePicker(context: context, initialDate: _selDate, firstDate: DateTime(2020), lastDate: DateTime(2030));
-                      if (p != null) setState(() => _selDate = p);
-                    }),
-                  ],
-                ),
-                filled: true, fillColor: Colors.white10,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+      body: Column(children: [
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          _prioBtn(const Color(0xFFFFD700), _langData[widget.lang]!['h']!),
+          _prioBtn(const Color(0xFF448AFF), _langData[widget.lang]!['m']!),
+          _prioBtn(const Color(0xFF9E9E9E), _langData[widget.lang]!['i']!),
+        ]),
+        const SizedBox(height: 15),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              hintText: "${_langData[widget.lang]!['p']} $dateLabel",
+              prefixIcon: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: _selColor, shape: BoxShape.circle),
+                child: IconButton(icon: const Icon(Icons.add, color: Colors.black, size: 22), onPressed: () {
+                  if (_controller.text.isNotEmpty) {
+                    setState(() => _tasks.insert(0, "${_controller.text}|$dateLabel (${_langData[widget.lang]!['at']} $timeStr)|${_selColor.value}"));
+                    _controller.clear(); _saveData();
+                  }
+                }),
               ),
+              suffixIcon: Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(icon: const Icon(Icons.access_time, color: Colors.white70), onPressed: () async {
+                  TimeOfDay? t = await showTimePicker(context: context, initialTime: _selTime);
+                  if (t != null) setState(() => _selTime = t);
+                }),
+                IconButton(icon: const Icon(Icons.calendar_month, color: Colors.white), onPressed: () async {
+                  DateTime? p = await showDatePicker(context: context, initialDate: _selDate, firstDate: DateTime(2020), lastDate: DateTime(2030));
+                  if (p != null) setState(() => _selDate = p);
+                }),
+              ]),
+              filled: true, fillColor: Colors.white10,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
             ),
           ),
-          const SizedBox(height: 15),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _tasks.length,
-              itemBuilder: (context, index) {
-                var p = _tasks[index].split('|');
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 8))),
-                  child: ListTile(
-                    title: Text(p[0], style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
-                    subtitle: Text(p[1], style: const TextStyle(fontSize: 12, color: Colors.white38)),
-                    trailing: IconButton(icon: const Icon(Icons.check_circle, color: Colors.greenAccent), onPressed: () {
-                      setState(() => _tasks.removeAt(index)); _saveData();
-                    }),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 15),
+        Expanded(child: ListView.builder(
+          itemCount: _tasks.length,
+          itemBuilder: (context, index) {
+            var p = _tasks[index].split('|');
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 8))),
+              child: ListTile(
+                title: Text(p[0], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                subtitle: Text(p[1], style: const TextStyle(fontSize: 12, color: Colors.white38)),
+                trailing: IconButton(icon: const Icon(Icons.check_circle, color: Colors.greenAccent), onPressed: () {
+                  setState(() => _tasks.removeAt(index)); _saveData();
+                }),
+              ),
+            );
+          },
+        )),
+      ]),
     );
   }
 
@@ -197,14 +175,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
     bool isS = _selColor.value == c.value;
     return GestureDetector(
       onTap: () => setState(() => _selColor = c),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Column(children: [
-          CircleAvatar(radius: 24, backgroundColor: c, child: isS ? const Icon(Icons.check, color: Colors.white) : null),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 13, color: isS ? Colors.white : Colors.white54)),
-        ]),
-      ),
+      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 15), child: Column(children: [
+        CircleAvatar(radius: 24, backgroundColor: c, child: isS ? const Icon(Icons.check, color: Colors.white) : null),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 13, color: isS ? Colors.white : Colors.white54)),
+      ])),
     );
   }
 }
