@@ -41,19 +41,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
   List<String> _tasks = [];
   Color _selColor = const Color(0xFFFFD700);
   DateTime _selDate = DateTime.now();
-  TimeOfDay? _selTime; // تغییر به نال‌شونده برای تشخیص اینکه کاربر ساعت انتخاب کرده یا نه
+  TimeOfDay? _selTime; 
   Timer? _alarmTimer;
 
   final Map<String, Map<String, String>> _langData = {
-    'en': {'n': 'English', 't': 'Elite Planner', 'p': 'Plan for', 'at': 'at', 'h': 'High', 'm': 'Normal', 'i': 'Idea'},
-    'pt': {'n': 'Português', 't': 'Planejador', 'p': 'Plano para', 'at': 'às', 'h': 'Alto', 'm': 'Normal', 'i': 'Ideia'},
-    'fr': {'n': 'Français', 't': 'Planificateur', 'p': 'Plan pour', 'at': 'à', 'h': 'Haut', 'm': 'Normal', 'i': 'Idée'},
-    'de': {'n': 'Deutsch', 't': 'Planer', 'p': 'Plan für', 'at': 'um', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee'},
-    'ru': {'n': 'Русский', 't': 'Планировщик', 'p': 'План на', 'at': 'в', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея'},
-    'zh': {'n': '中文', 't': '规划师', 'p': '计划于', 'at': '在', 'h': '紧急', 'm': '普通', 'i': '想法'},
-    'it': {'n': 'Italiano', 't': 'Pianificatore', 'p': 'Piano per', 'at': 'alle', 'h': 'Alto', 'm': 'Normale', 'i': 'Idea'},
-    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'p': 'خطة لـ', 'at': 'في', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة'},
-    'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'p': 'برنامه برای', 'at': 'ساعت', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده'},
+    'en': {'n': 'English', 't': 'Elite Planner', 'p': 'Plan for', 'at': 'at', 'h': 'High', 'm': 'Normal', 'i': 'Idea', 'l': 'Language'},
+    'pt': {'n': 'Português', 't': 'Planejador', 'p': 'Plano para', 'at': 'às', 'h': 'Alto', 'm': 'Normal', 'i': 'Ideia', 'l': 'Idioma'},
+    'fr': {'n': 'Français', 't': 'Planificateur', 'p': 'Plan pour', 'at': 'à', 'h': 'Haut', 'm': 'Normal', 'i': 'Idée', 'l': 'Langue'},
+    'de': {'n': 'Deutsch', 't': 'Planer', 'p': 'Plan für', 'at': 'um', 'h': 'Hoch', 'm': 'Normal', 'i': 'Idee', 'l': 'Sprache'},
+    'ru': {'n': 'Русский', 't': 'Планировщик', 'p': 'План на', 'at': 'в', 'h': 'Срочно', 'm': 'Обычно', 'i': 'Идея', 'l': 'Язык'},
+    'zh': {'n': '中文', 't': '规划师', 'p': '计划于', 'at': '在', 'h': '紧急', 'm': '普通', 'i': '想法', 'l': '语言'},
+    'it': {'n': 'Italiano', 't': 'Pianificatore', 'p': 'Piano per', 'at': 'alle', 'h': 'Alto', 'm': 'Normale', 'i': 'Idea', 'l': 'Lingua'},
+    'ar': {'n': 'العربية', 't': 'مخطط النخبة', 'p': 'خطة لـ', 'at': 'في', 'h': 'عالي', 'm': 'عادي', 'i': 'فكرة', 'l': 'اللغة'},
+    'fa': {'n': 'فارسی', 't': 'برنامه‌ریز استراتژیک', 'p': 'برنامه برای', 'at': 'ساعت', 'h': 'فوری', 'm': 'معمولی', 'i': 'ایده', 'l': 'زبان'},
   };
 
   @override
@@ -68,8 +68,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final nowStr = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
     for (var task in _tasks) {
       if (task.contains("($nowStr)") && !task.startsWith("✔")) {
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        HapticFeedback.vibrate();
         _showAlarmDialog(task.split('|')[0]);
         break;
       }
@@ -77,15 +76,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   void _showAlarmDialog(String title) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Icon(Icons.alarm, color: Colors.yellow, size: 50),
-        content: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20)),
-        actions: [Center(child: TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")))],
-      ),
-    );
+    showDialog(context: context, builder: (context) => AlertDialog(
+      title: const Icon(Icons.alarm, color: Colors.yellow, size: 40),
+      content: Text(title, textAlign: TextAlign.center),
+      actions: [Center(child: TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")))],
+    ));
   }
 
   String _toSolar(DateTime d) {
@@ -101,29 +96,32 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return "$jy/$jm/$jd";
   }
 
-  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v21') ?? []); }
-  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v21', _tasks); }
+  _loadData() async { final prefs = await SharedPreferences.getInstance(); setState(() => _tasks = prefs.getStringList('tasks_v22') ?? []); }
+  _saveData() async { final prefs = await SharedPreferences.getInstance(); await prefs.setStringList('tasks_v22', _tasks); }
 
   @override
   Widget build(BuildContext context) {
     String dateLabel = (widget.lang == 'fa') ? _toSolar(_selDate) : "${_selDate.day}/${_selDate.month}/${_selDate.year}";
-    String timeLabel = _selTime != null ? "${_langData[widget.lang]!['at']} ${_selTime!.format(context)}" : "";
-
+    
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        toolbarHeight: 100, backgroundColor: Colors.transparent,
+        toolbarHeight: 110, backgroundColor: Colors.transparent, elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Column(children: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.language, color: Color(0xFFFFD700), size: 28),
+              onSelected: widget.onLangChange,
+              itemBuilder: (context) => _langData.entries.map((e) => PopupMenuItem(value: e.key, child: Text(e.value['n']!))).toList(),
+            ),
+            Text(_langData[widget.lang]!['l']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 10)),
+          ]),
+        ),
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
-          Text("$dateLabel $timeLabel", style: const TextStyle(fontSize: 12, color: Colors.white54)),
+          Text(_langData[widget.lang]!['t']!, style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(dateLabel, style: const TextStyle(fontSize: 11, color: Colors.white54)),
         ]),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.language, color: Color(0xFFFFD700), size: 30),
-            onSelected: widget.onLangChange,
-            itemBuilder: (context) => _langData.entries.map((e) => PopupMenuItem(value: e.key, child: Text(e.value['n']!))).toList(),
-          ),
-        ],
       ),
       body: Column(children: [
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -139,43 +137,45 @@ class _PlannerScreenState extends State<PlannerScreen> {
             decoration: InputDecoration(
               hintText: "${_langData[widget.lang]!['p']} $dateLabel",
               prefixIcon: IconButton(
-                icon: CircleAvatar(backgroundColor: _selColor, child: const Icon(Icons.add, color: Colors.black)),
+                icon: CircleAvatar(backgroundColor: const Color(0xFF448AFF), child: const Icon(Icons.add, color: Colors.black)),
                 onPressed: () {
                   if (_controller.text.isNotEmpty) {
-                    String alarmPart = _selTime != null ? " (${_selTime!.format(context)})" : "";
+                    String alarmStr = _selTime != null ? " (${_selTime!.hour.toString().padLeft(2, '0')}:${_selTime!.minute.toString().padLeft(2, '0')})" : "";
                     setState(() {
-                      _tasks.insert(0, "${_controller.text}|$dateLabel$alarmPart|${_selColor.value}");
-                      _selTime = null; // ریست کردن ساعت برای یادداشت بعدی
+                      _tasks.insert(0, "${_controller.text}|$dateLabel$alarmStr|${_selColor.value}");
+                      _selTime = null; // مشکل تکرار زمان اینجا حل شد
                     });
                     _controller.clear(); _saveData();
                   }
                 },
               ),
               suffixIcon: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: Icon(Icons.access_time, color: _selTime != null ? Colors.yellow : Colors.white), onPressed: () async {
+                IconButton(icon: Icon(Icons.access_time, color: _selTime != null ? Colors.yellow : Colors.white70), onPressed: () async {
                   TimeOfDay? t = await showTimePicker(context: context, initialTime: TimeOfDay.now());
                   if (t != null) setState(() => _selTime = t);
                 }),
-                IconButton(icon: const Icon(Icons.calendar_month), onPressed: () async {
+                IconButton(icon: const Icon(Icons.calendar_month, color: Colors.white70), onPressed: () async {
                   DateTime? p = await showDatePicker(context: context, initialDate: _selDate, firstDate: DateTime(2020), lastDate: DateTime(2030));
                   if (p != null) setState(() => _selDate = p);
                 }),
               ]),
-              filled: true, fillColor: Colors.white10,
+              filled: true, fillColor: Colors.white12,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
             ),
           ),
         ),
+        const SizedBox(height: 10),
         Expanded(child: ListView.builder(
           itemCount: _tasks.length,
           itemBuilder: (context, index) {
             var p = _tasks[index].split('|');
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 5))),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(15), border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 4))),
               child: ListTile(
-                title: Text(p[0]), subtitle: Text(p[1], style: const TextStyle(fontSize: 10, color: Colors.white38)),
-                trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent), onPressed: () { setState(() => _tasks.removeAt(index)); _saveData(); }),
+                title: Text(p[0], style: const TextStyle(fontSize: 14)),
+                subtitle: Text(p[1], style: const TextStyle(fontSize: 10, color: Colors.white38)),
+                trailing: IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 20), onPressed: () { setState(() => _tasks.removeAt(index)); _saveData(); }),
               ),
             );
           },
@@ -189,8 +189,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selColor = c),
       child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Column(children: [
-        CircleAvatar(radius: 25, backgroundColor: c, child: isS ? const Icon(Icons.check, color: Colors.white) : null),
-        Text(label, style: TextStyle(fontSize: 11, color: isS ? Colors.white : Colors.white54)),
+        CircleAvatar(radius: 24, backgroundColor: c, child: isS ? const Icon(Icons.check, color: Colors.white) : null),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 10, color: isS ? Colors.white : Colors.white54)),
       ])),
     );
   }
