@@ -13,24 +13,6 @@ class GlobalPlannerApp extends StatefulWidget {
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
   String _currentLang = 'en';
 
-  final Map<String, Map<String, String>> _localizedValues = {
-    'en': {
-      'title': 'Global Elite Planner',
-      'hint': 'Next Business Goal...',
-      'empty': 'Focus on your vision',
-    },
-    'ar': {
-      'title': 'مخطط النخبة العالمي',
-      'hint': 'الهدف التجاري القادم...',
-      'empty': 'ركز على رؤيتك',
-    },
-    'fa': {
-      'title': 'برنامه‌ریز هوشمند جهانی',
-      'hint': 'هدف بیزینسی بعدی...',
-      'empty': 'روی رویای خود تمرکز کنید',
-    },
-  };
-
   void _changeLanguage(String lang) {
     setState(() => _currentLang = lang);
   }
@@ -46,11 +28,7 @@ class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
       ),
       home: Directionality(
         textDirection: _currentLang == 'en' ? TextDirection.ltr : TextDirection.rtl,
-        child: PlannerScreen(
-          lang: _currentLang,
-          values: _localizedValues[_currentLang]!,
-          onLangChange: _changeLanguage,
-        ),
+        child: PlannerScreen(lang: _currentLang, onLangChange: _changeLanguage),
       ),
     );
   }
@@ -58,10 +36,8 @@ class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
 
 class PlannerScreen extends StatefulWidget {
   final String lang;
-  final Map<String, String> values;
   final Function(String) onLangChange;
-
-  const PlannerScreen({super.key, required this.lang, required this.values, required this.onLangChange});
+  const PlannerScreen({super.key, required this.lang, required this.onLangChange});
 
   @override
   State<PlannerScreen> createState() => _PlannerScreenState();
@@ -70,7 +46,32 @@ class PlannerScreen extends StatefulWidget {
 class _PlannerScreenState extends State<PlannerScreen> {
   final TextEditingController _controller = TextEditingController();
   List<String> _tasks = [];
-  Color _selectedPriorityColor = const Color(0xFFFFD700); // پیش‌فرض طلایی
+  Color _selectedColor = const Color(0xFFFFD700); // طلایی پیش‌فرض
+
+  // لیست متون راهنما بر اساس زبان و رنگ اولویت
+  final Map<String, Map<int, String>> _dynamicHints = {
+    'en': {
+      0xFFFFD700: 'Urgent Business Goal...',
+      0x448AFF: 'Daily Routine Task...',
+      0xFF9E9E9E: 'New Creative Idea...',
+    },
+    'ar': {
+      0xFFFFD700: 'هدف تجاري عاجل...',
+      0x448AFF: 'مهمة روتينية يومية...',
+      0xFF9E9E9E: 'فكرة إبداعية جديدة...',
+    },
+    'fa': {
+      0xFFFFD700: 'هدف فوری بیزینسی...',
+      0x448AFF: 'کارهای روتین روزانه...',
+      0xFF9E9E9E: 'ایده خلاقانه جدید...',
+    },
+  };
+
+  final Map<String, String> _titles = {
+    'en': 'Global Elite Planner',
+    'ar': 'مخطط النخبة العالمي',
+    'fa': 'برنامه‌ریز هوشمند جهانی',
+  };
 
   @override
   void initState() {
@@ -80,12 +81,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() => _tasks = prefs.getStringList('tasks_v5_priority') ?? []);
+    setState(() => _tasks = prefs.getStringList('tasks_v6_final') ?? []);
   }
 
   _saveData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('tasks_v5_priority', _tasks);
+    await prefs.setStringList('tasks_v6_final', _tasks);
   }
 
   @override
@@ -98,12 +99,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.values['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(_titles[widget.lang]!, style: const TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold)),
             Text("$timeStr - ${now.day}/${now.month}/${now.year}", style: const TextStyle(color: Colors.white60, fontSize: 11)),
           ],
         ),
         backgroundColor: Colors.transparent,
-        elevation: 0,
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.language, color: Color(0xFFFFD700)),
@@ -118,15 +118,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
       body: Column(
         children: [
-          // بخش انتخاب اولویت (رنگی)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _priorityCircle(const Color(0xFFFFD700)), // طلایی - High
-                _priorityCircle(Colors.blueAccent),      // آبی - Normal
-                _priorityCircle(Colors.grey),            // خاکستری - Idea
+                _colorNode(const Color(0xFFFFD700)),
+                _colorNode(Colors.blueAccent),
+                _colorNode(Colors.grey),
               ],
             ),
           ),
@@ -135,22 +134,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: _selectedPriorityColor.withOpacity(0.5)),
+                border: Border.all(color: _selectedColor.withOpacity(0.4)),
               ),
               child: TextField(
                 controller: _controller,
-                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: widget.values['hint'],
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  // هوشمندسازی متن راهنما بر اساس رنگ و زبان
+                  hintText: _dynamicHints[widget.lang]![_selectedColor.value],
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: Colors.white10,
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.add_circle, color: _selectedPriorityColor, size: 30),
+                    icon: Icon(Icons.add_circle, color: _selectedColor, size: 30),
                     onPressed: () {
                       if (_controller.text.isNotEmpty) {
-                        // ذخیره کد رنگ به همراه متن
-                        setState(() => _tasks.insert(0, "${_controller.text}|$timeStr|${_selectedPriorityColor.value}"));
+                        setState(() => _tasks.insert(0, "${_controller.text}|$timeStr|${_selectedColor.value}"));
                         _controller.clear();
                         _saveData();
                       }
@@ -165,28 +162,18 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: ListView.builder(
               itemCount: _tasks.length,
               itemBuilder: (context, index) {
-                var parts = _tasks[index].split('|');
-                var text = parts[0];
-                var time = parts[1];
-                var colorVal = int.parse(parts[2]);
-
+                var p = _tasks[index].split('|');
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(15),
-                    border: Border(left: BorderSide(color: Color(colorVal), width: 4)),
+                    border: Border(left: BorderSide(color: Color(int.parse(p[2])), width: 4)),
                   ),
                   child: ListTile(
-                    title: Text(text, style: const TextStyle(color: Colors.white, fontSize: 15)),
-                    subtitle: Text(time, style: const TextStyle(color: Colors.white38, fontSize: 10)),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 22),
-                      onPressed: () {
-                        setState(() => _tasks.removeAt(index));
-                        _saveData();
-                      },
-                    ),
+                    title: Text(p[0]),
+                    subtitle: Text(p[1], style: const TextStyle(fontSize: 10, color: Colors.white38)),
+                    trailing: const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
                   ),
                 );
               },
@@ -197,24 +184,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  Widget _priorityCircle(Color color) {
+  Widget _colorNode(Color c) {
+    bool isSel = _selectedColor == c;
     return GestureDetector(
-      onTap: () => setState(() => _selectedPriorityColor = color),
+      onTap: () => setState(() => _selectedColor = c),
       child: Container(
         margin: const EdgeInsets.all(8),
-        width: 30,
-        height: 30,
+        width: 32, height: 32,
         decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: _selectedPriorityColor == color ? Colors.white : Colors.transparent,
-            width: 2,
-          ),
-          boxShadow: [
-            if (_selectedPriorityColor == color)
-              BoxShadow(color: color.withOpacity(0.5), blurRadius: 10)
-          ],
+          color: c, shape: BoxShape.circle,
+          border: Border.all(color: isSel ? Colors.white : Colors.transparent, width: 2),
+          boxShadow: [if (isSel) BoxShadow(color: c.withOpacity(0.6), blurRadius: 12)],
         ),
       ),
     );
