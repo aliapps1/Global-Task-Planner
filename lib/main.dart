@@ -880,7 +880,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           '${_formatDate(task.date)}'
           '${task.time == null ? '' : '  ${task.time}'}'
           '  • ${task.type}'
-          '${task.repeat == 'none' ? '' : '  • ${task.repeat}'}
+          '${task.repeat == 'none' ? '' : '  • ${task.repeat}'}'
           '${task.note.isEmpty ? '' : '\n${task.note}'}',
           style: const TextStyle(fontSize: 10, color: Colors.white38),
         ),
