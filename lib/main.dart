@@ -15,6 +15,20 @@ class GlobalPlannerApp extends StatefulWidget {
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
   String _currentLang = 'en';
   void _changeLanguage(String lang) => setState(() => _currentLang = lang);
+  String _typeLabel(String type) {
+    if (type == 'idea') return tr['i'] ?? 'Idea';
+    if (type == 'task') return tr['task'] ?? 'Task';
+    if (type == 'project') return tr['project'] ?? 'Project';
+    return type;
+  }
+
+  String _repeatLabel(String repeat) {
+    if (repeat == 'none') return tr['none'] ?? 'None';
+    if (repeat == 'daily') return tr['daily'] ?? 'Daily';
+    if (repeat == 'weekly') return tr['weekly'] ?? 'Weekly';
+    if (repeat == 'monthly') return tr['monthly'] ?? 'Monthly';
+    return repeat;
+  }
 
   @override
   Widget build(BuildContext context) {
