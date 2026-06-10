@@ -539,7 +539,14 @@ String _repeatLabel(String repeat) {
     child: ListTile(
       leading: IconButton(icon: Icon(t.completed ? Icons.check_circle : Icons.circle_outlined, color: t.completed ? const Color(0xFFFFD700) : Colors.white54), onPressed: () => _toggle(i)),
       title: Text(t.title, style: TextStyle(fontSize: 14, decoration: t.completed ? TextDecoration.lineThrough : null, color: t.completed ? Colors.white38 : Colors.white)),
-      subtitle: Text('${_date(t.date)}${t.time == null ? '' : '  ${t.time}'}  • ${tr[t.type] ?? t.type}${t.repeat == 'none' ? '' : '  • ${tr[t.repeat] ?? t.repeat}'}${t.note.isEmpty ? '' : '\n${t.note}'}', style: const TextStyle(fontSize: 10, color: Colors.white38)),
+      subtitle: Text(
+  '${_date(t.date)}'
+  '${t.time == null ? '' : '  ${t.time}'}'
+  '  • ${_typeLabel(t.type)}'
+  '${t.repeat == 'none' ? '' : '  • ${_repeatLabel(t.repeat)}'}'
+  '${t.note.isEmpty ? '' : '\n${t.note}'}',
+  style: const TextStyle(fontSize: 10, color: Colors.white38),
+),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         IconButton(icon: const Icon(Icons.edit, color: Colors.white54, size: 20), onPressed: () => _edit(i)),
         IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 20), onPressed: () { setState(() => _tasks.removeAt(i)); _save(); }),
