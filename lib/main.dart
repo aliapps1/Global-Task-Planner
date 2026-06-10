@@ -543,8 +543,7 @@ String _repeatLabel(String repeat) {
   '${_date(t.date)}'
   '${t.time == null ? '' : '  ${t.time}'}'
   '  • ${_typeLabel(t.type)}'
-  '${t.repeat == 'none' ? '' : '  • ${_repeatLabel(t.repeat)}'}'
-  '${t.note.isEmpty ? '' : '\n${t.note}'}',
+  '${t.repeat == 'none' ? '' : '  • ${_repeatLabel(t.repeat)}'}',
   style: const TextStyle(fontSize: 10, color: Colors.white38),
 ),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
