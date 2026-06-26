@@ -19,6 +19,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Copy icons to web
+        run: |
+          cp assets/icons/gtp_icon_512.png web/icons/Icon-192.png
+          cp assets/icons/gtp_icon_512.png web/icons/Icon-512.png
+          cp assets/icons/gtp_icon_1024.png web/icons/Icon-maskable-192.png
+          cp assets/icons/gtp_icon_1024.png web/icons/Icon-maskable-512.png
+
       - name: Build Web
         run: flutter build web --release --base-href "/Global-Task-Planner/"
 
