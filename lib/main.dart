@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,35 +8,23 @@ void main() => runApp(const GlobalPlannerApp());
 
 class GlobalPlannerApp extends StatefulWidget {
   const GlobalPlannerApp({super.key});
-
   @override
   State<GlobalPlannerApp> createState() => _GlobalPlannerAppState();
 }
 
 class _GlobalPlannerAppState extends State<GlobalPlannerApp> {
   String _currentLang = 'en';
-
-  void _changeLanguage(String lang) {
-    setState(() => _currentLang = lang);
-  }
+  void _changeLanguage(String lang) => setState(() => _currentLang = lang);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Global Task Planner',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: const Color(0xFFFFD700),
-      ),
+      theme: ThemeData(brightness: Brightness.dark, primaryColor: const Color(0xFFFFD700)),
       home: Directionality(
-        textDirection: ['ar', 'fa'].contains(_currentLang)
-            ? TextDirection.rtl
-            : TextDirection.ltr,
-        child: PlannerScreen(
-          lang: _currentLang,
-          onLangChange: _changeLanguage,
-        ),
+        textDirection: ['ar', 'fa'].contains(_currentLang) ? TextDirection.rtl : TextDirection.ltr,
+        child: PlannerScreen(lang: _currentLang, onLangChange: _changeLanguage),
       ),
     );
   }
@@ -96,13 +83,7 @@ class PlannerTask {
 class PlannerScreen extends StatefulWidget {
   final String lang;
   final Function(String) onLangChange;
-
-  const PlannerScreen({
-    super.key,
-    required this.lang,
-    required this.onLangChange,
-  });
-
+  const PlannerScreen({super.key, required this.lang, required this.onLangChange});
   @override
   State<PlannerScreen> createState() => _PlannerScreenState();
 }
@@ -131,8 +112,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     'it': {'n':'Italiano','l':'Lingua','app':'Global Task Planner','p':'Piano per','h':'Alto','m':'Normale','i':'Idea','task':'Attività','project':'Progetto','all':'Tutti','done':'Fatto','search':'Cerca','repeat':'Ripeti','none':'Nessuno','daily':'Giornaliero','weekly':'Settimanale','monthly':'Mensile','save':'Salva','edit':'Modifica','cancel':'Annulla','note':'Nota','total':'Totale','completed':'Completati','pending':'In sospeso','empty':'Nessuna attività','today':'Oggi','tomorrow':'Domani','week':'Questa settimana','overdue':'Scaduti','settings':'Impostazioni','export':'Esporta backup','import':'Importa backup','clear':'Cancella dati','copy':'Backup copiato','paste':'Incolla backup','ok':'OK'},
     'ar': {'n':'العربية','l':'اللغة','app':'Global Task Planner','p':'خطة لـ','h':'عالي','m':'عادي','i':'فكرة','task':'مهمة','project':'مشروع','all':'الكل','done':'تم','search':'بحث','repeat':'تكرار','none':'بدون','daily':'يومي','weekly':'أسبوعي','monthly':'شهري','save':'حفظ','edit':'تعديل','cancel':'إلغاء','note':'ملاحظة','total':'المجموع','completed':'مكتمل','pending':'متبقي','empty':'لا توجد مهام','today':'اليوم','tomorrow':'غداً','week':'هذا الأسبوع','overdue':'متأخر','settings':'الإعدادات','export':'تصدير نسخة','import':'استيراد نسخة','clear':'مسح البيانات','copy':'تم نسخ النسخة','paste':'الصق النسخة','ok':'موافق'},
     'fa': {'n':'فارسی','l':'زبان','app':'Global Task Planner','p':'برنامه برای','h':'فوری','m':'معمولی','i':'ایده','task':'کار','project':'پروژه','all':'همه','done':'انجام‌شده','search':'جستجو','repeat':'تکرار','none':'ندارد','daily':'روزانه','weekly':'هفتگی','monthly':'ماهانه','save':'ذخیره','edit':'ویرایش','cancel':'لغو','note':'یادداشت','total':'کل','completed':'انجام‌شده','pending':'مانده','empty':'هنوز کاری ثبت نشده','today':'امروز','tomorrow':'فردا','week':'این هفته','overdue':'عقب‌افتاده','settings':'تنظیمات','export':'خروجی بکاپ','import':'ورود بکاپ','clear':'پاک کردن داده‌ها','copy':'بکاپ کپی شد','paste':'متن بکاپ را وارد کن','ok':'تأیید'},
-    'hi': {'n':'हिन्दी','l':'भाषा','app':'Global Task Planner','p':'योजना के लिए','h':'उच्च','m':'सामान्य','i':'विचार','task':'कार्य','project':'प्रोजेक्ट','all':'सभी','done':'पूर्ण','search':'खोज','repeat':'दोहराएँ','none':'नहीं','daily':'दैनिक','weekly':'साप्ताहिक','monthly':'मासिक','save':'सहेजें','edit':'संपादित करें','cancel':'रद्द करें','note':'नोट','total':'कुल','completed':'पूर्ण','pending':'बाकी','empty':'अभी कोई कार्य नहीं','today':'आज','tomorrow':'कल','week':'इस सप्ताह','overdue':'विलंबित','settings':'सेटिंग्स','export':'बैकअप निर्यात','import':'बैकअप आयात','clear':'डेटा साफ़ करें','copy':'बैकअप कॉपी हुआ','paste':'बैकअप टेक्स्ट डालें','ok':'ठीक'},
-    'bn': {'n':'বাংলা','l':'ভাষা','app':'Global Task Planner','p':'পরিকল্পনা','h':'উচ্চ','m':'স্বাভাবিক','i':'ধারণা','task':'কাজ','project':'প্রকল্প','all':'সব','done':'সম্পন্ন','search':'অনুসন্ধান','repeat':'পুনরাবৃত্তি','none':'নেই','daily':'দৈনিক','weekly':'সাপ্তাহিক','monthly':'মাসিক','save':'সংরক্ষণ','edit':'সম্পাদনা','cancel':'বাতিল','note':'নোট','total':'মোট','completed':'সম্পন্ন','pending':'বাকি','empty':'এখনো কোনো কাজ নেই','today':'আজ','tomorrow':'আগামীকাল','week':'এই সপ্তাহ','overdue':'বিলম্বিত','settings':'সেটিংস','export':'ব্যাকআপ রপ্তানি','import':'ব্যাকআপ আমদানি','clear':'ডেটা মুছুন','copy':'ব্যাকআপ কপি হয়েছে','paste':'ব্যাকআপ টেক্সট দিন','ok':'ঠিক আছে'},
   };
 
   Map<String, String> get tr => _langData[widget.lang] ?? _langData['en']!;
@@ -163,21 +142,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     await p.setStringList('tasks_v50', _tasks.map((e) => jsonEncode(e.toJson())).toList());
   }
 
-  String _typeLabel(String type) {
-    if (type == 'idea') return tr['i'] ?? 'Idea';
-    if (type == 'task') return tr['task'] ?? 'Task';
-    if (type == 'project') return tr['project'] ?? 'Project';
-    return type;
-  }
-
-  String _repeatLabel(String repeat) {
-    if (repeat == 'none') return tr['none'] ?? 'None';
-    if (repeat == 'daily') return tr['daily'] ?? 'Daily';
-    if (repeat == 'weekly') return tr['weekly'] ?? 'Weekly';
-    if (repeat == 'monthly') return tr['monthly'] ?? 'Monthly';
-    return repeat;
-  }
-
   String _date(DateTime d) {
     if (widget.lang == 'fa') return _toSolar(d);
     const months = {
@@ -189,8 +153,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
       'zh':['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
       'it':['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],
       'ar':['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
-      'hi':['जन','फ़र','मार्च','अप्रैल','मई','जून','जुलाई','अग','सित','अक्टू','नवं','दिसं'],
-      'bn':['জানু','ফেব','মার্চ','এপ্রি','মে','জুন','জুল','আগ','সেপ্ট','অক্টো','নভে','ডিসে'],
     };
     final m = months[widget.lang] ?? months['en']!;
     return '${d.day} ${m[d.month - 1]} ${d.year}';
@@ -234,7 +196,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   void _toggle(int i) {
-    if (i < 0 || i >= _tasks.length) return;
     final t = _tasks[i];
     setState(() {
       t.completed = !t.completed;
@@ -267,7 +228,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
   List<PlannerTask> get _visible {
     final q = _search.text.toLowerCase().trim();
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final weekEnd = DateTime(now.year, now.month, now.day + 7);
 
@@ -281,8 +241,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
           (_filter == 'project' && t.type == 'project') ||
           (_filter == 'today' && _sameDay(t.date, now)) ||
           (_filter == 'tomorrow' && _sameDay(t.date, tomorrow)) ||
-          (_filter == 'week' && !t.date.isBefore(today) && t.date.isBefore(weekEnd)) ||
-          (_filter == 'overdue' && !t.completed && t.date.isBefore(today));
+          (_filter == 'week' && !t.date.isBefore(DateTime(now.year, now.month, now.day)) && t.date.isBefore(weekEnd)) ||
+          (_filter == 'overdue' && !t.completed && t.date.isBefore(DateTime(now.year, now.month, now.day)));
       return s && f;
     }).toList();
   }
@@ -307,7 +267,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   void _edit(int i) {
-    if (i < 0 || i >= _tasks.length) return;
     final t = _tasks[i];
     final title = TextEditingController(text: t.title);
     final note = TextEditingController(text: t.note);
@@ -547,20 +506,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
     child: ListTile(
       leading: IconButton(icon: Icon(t.completed ? Icons.check_circle : Icons.circle_outlined, color: t.completed ? const Color(0xFFFFD700) : Colors.white54), onPressed: () => _toggle(i)),
       title: Text(t.title, style: TextStyle(fontSize: 14, decoration: t.completed ? TextDecoration.lineThrough : null, color: t.completed ? Colors.white38 : Colors.white)),
-      subtitle: Text(
-        '${_date(t.date)}'
-        '${t.time == null ? '' : '  ${t.time}'}'
-        '  • ${_typeLabel(t.type)}'
-        '${t.repeat == 'none' ? '' : '  • ${_repeatLabel(t.repeat)}',
-        style: const TextStyle(fontSize: 10, color: Colors.white38),
-      ),
+      subtitle: Text('${_date(t.date)}${t.time == null ? '' : '  ${t.time}'}  • ${tr[t.type] ?? t.type}${t.repeat == 'none' ? '' : '  • ${tr[t.repeat] ?? t.repeat}'}${t.note.isEmpty ? '' : '\n${t.note}'}', style: const TextStyle(fontSize: 10, color: Colors.white38)),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         IconButton(icon: const Icon(Icons.edit, color: Colors.white54, size: 20), onPressed: () => _edit(i)),
-        IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 20), onPressed: () {
-          if (i < 0 || i >= _tasks.length) return;
-          setState(() => _tasks.removeAt(i));
-          _save();
-        }),
+        IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 20), onPressed: () { setState(() => _tasks.removeAt(i)); _save(); }),
       ]),
     ),
   );
