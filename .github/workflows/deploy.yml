@@ -20,7 +20,7 @@ jobs:
         run: flutter pub get
 
       - name: Copy icons to web
-        run: |
+        run: 
           mkdir -p web/icons
           cp assets/icons/gtp_icon_512.png web/icons/Icon-192.png
           cp assets/icons/gtp_icon_512.png web/icons/Icon-512.png
