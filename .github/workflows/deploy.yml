@@ -27,9 +27,11 @@ jobs:
           cp assets/icons/gtp_icon_1024.png web/icons/Icon-maskable-192.png
           cp assets/icons/gtp_icon_1024.png web/icons/Icon-maskable-512.png
 
-      - name: Build Web
-        run: flutter build web --release --base-href "/Global-Task-Planner/"
-
+      
+- name: Build Web
+        run: |
+          flutter build web --release --base-href "/Global-Task-Planner/"
+          rm -f build/web/flutter_service_worker.js
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
