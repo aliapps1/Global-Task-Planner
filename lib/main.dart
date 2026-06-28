@@ -329,7 +329,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final ctrl = TextEditingController();
     showDialog(context: context, builder: (_) => AlertDialog(
       backgroundColor: Colors.grey[900],
-      title: Text(tr['settings']!),
+      title: const Text("TEST SETTINGS"),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         ListTile(
   title: const Text('Premium', style: TextStyle(color: Color(0xFFFFD700))),
