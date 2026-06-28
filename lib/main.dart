@@ -331,6 +331,16 @@ class _PlannerScreenState extends State<PlannerScreen> {
       backgroundColor: Colors.grey[900],
       title: Text(tr['settings']!),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
+        ListTile(
+  title: const Text('Premium', style: TextStyle(color: Color(0xFFFFD700))),
+  leading: const Icon(Icons.workspace_premium, color: Color(0xFFFFD700)),
+  onTap: () {
+    Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => PremiumScreen(lang: widget.lang),
+    ));
+  },
+),
         ListTile(title: Text(tr['export']!), leading: const Icon(Icons.copy), onTap: () {
           Clipboard.setData(ClipboardData(text: backup));
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr['copy']!)));
