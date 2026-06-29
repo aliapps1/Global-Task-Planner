@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   shared_preferences: ^2.2.3
   in_app_purchase: ^3.1.13
+  flutter_local_notifications: ^19.4.0
+timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:
