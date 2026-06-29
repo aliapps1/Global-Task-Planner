@@ -273,7 +273,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     }).toList();
   }
 
-  void _checkAlarms() {
+  Future<void> _checkAlarms() async {
     final now = DateTime.now();
     final nowTime = '${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')}';
     for (final t in _tasks) {
