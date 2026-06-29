@@ -4,8 +4,28 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+final FlutterLocalNotificationsPlugin notifications =
+    FlutterLocalNotificationsPlugin();
 
-void main() => runApp(const GlobalPlannerApp());
+Future<void> initNotifications() async {
+  tz.initializeTimeZones();
+
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const initSettings = InitializationSettings(
+    android: androidSettings,
+  );
+
+  await notifications.initialize(initSettings);
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initNotifications();
+  runApp(const GlobalPlannerApp());
+}
 
 class GlobalPlannerApp extends StatefulWidget {
   const GlobalPlannerApp({super.key});
