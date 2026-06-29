@@ -195,6 +195,33 @@ class _PlannerScreenState extends State<PlannerScreen> {
     int jd=1+((days<186)?days%31:(days-186)%30);
     return '$jy/$jm/$jd';
   }
+    Future<void> _scheduleNotification(PlannerTask task) async {
+  if (task.time == null) return;
+
+  final parts = task.time!.split(':');
+  final date = DateTime(
+    task.date.year,
+    task.date.month,
+    task.date.day,
+    int.parse(parts[0]),
+    int.parse(parts[1]),
+  );
+
+  await notifications.show(
+    task.id.hashCode,
+    'Reminder',
+    task.title,
+    const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'planner_channel',
+        'Planner Reminders',
+        channelDescription: 'Task reminders',
+        importance: Importance.max,
+        priority: Priority.high,
+      ),
+    ),
+  );
+    }
 
   void _add() {
     final text = _title.text.trim();
