@@ -280,6 +280,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
       if (!t.completed && !t.reminded && _sameDay(t.date, now) && t.time == nowTime) {
         t.reminded = true;
         _save();
+          await notifications.show(
+  0,
+  'Reminder',
+  t.title,
+  const NotificationDetails(
+    android: AndroidNotificationDetails(
+      'planner_channel',
+      'Planner Reminders',
+      channelDescription: 'Task reminders',
+      importance: Importance.max,
+      priority: Priority.high,
+    ),
+  ),
+);
         HapticFeedback.vibrate();
         showDialog(context: context, barrierDismissible: false, builder: (_) => AlertDialog(
           backgroundColor: Colors.grey[900],
