@@ -530,13 +530,31 @@ class _PlannerScreenState extends State<PlannerScreen> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
           ),
         )),
+    
         const SizedBox(height: 8),
-        SingleChildScrollView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
-          _filterBtn(tr['all']!, 'all'), _filterBtn(tr['today']!, 'today'), _filterBtn(tr['tomorrow']!, 'tomorrow'),
-          _filterBtn(tr['week']!, 'week'), _filterBtn(tr['overdue']!, 'overdue'), _filterBtn(tr['h']!, 'high'),
-          _filterBtn(tr['m']!, 'normal'), _filterBtn(tr['i']!, 'idea'), _filterBtn(tr['project']!, 'project'), _filterBtn(tr['done']!, 'done'),
-        ])),
-        const SizedBox(height: 8),
+
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16),
+  child: Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    alignment: WrapAlignment.center,
+    children: [
+      _filterBtn(tr['all']!, 'all'),
+      _filterBtn(tr['today']!, 'today'),
+      _filterBtn(tr['tomorrow']!, 'tomorrow'),
+      _filterBtn(tr['week']!, 'week'),
+      _filterBtn(tr['overdue']!, 'overdue'),
+      _filterBtn(tr['h']!, 'high'),
+      _filterBtn(tr['m']!, 'normal'),
+      _filterBtn(tr['i']!, 'idea'),
+      _filterBtn(tr['project']!, 'project'),
+      _filterBtn(tr['done']!, 'done'),
+    ],
+  ),
+),
+
+const SizedBox(height: 8),
         Expanded(child: visible.isEmpty ? Center(child: Text(tr['empty']!, style: const TextStyle(color: Colors.white38))) : ListView.builder(
           itemCount: visible.length,
           itemBuilder: (_, idx) {
