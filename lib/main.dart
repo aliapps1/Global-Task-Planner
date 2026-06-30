@@ -537,8 +537,8 @@ Padding(
   padding: const EdgeInsets.symmetric(horizontal: 16),
   child: Wrap(
     spacing: 8,
-    runSpacing: 4,
-    alignment: WrapAlignment.start,
+    runSpacing: 8,
+    alignment: WrapAlignment.center,
     children: [
       _filterBtn(tr['all']!, 'all'),
       _filterBtn(tr['today']!, 'today'),
