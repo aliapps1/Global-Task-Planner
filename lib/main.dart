@@ -1,4 +1,5 @@
 import 'premium_screen.dart';
+import 'support_screen.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -397,6 +398,16 @@ class _PlannerScreenState extends State<PlannerScreen> {
       backgroundColor: Colors.grey[900],
       title: Text(tr['settings'] ?? 'Settings'),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+  title: const Text('Support', style: TextStyle(color: Colors.white)),
+  leading: const Icon(Icons.favorite, color: Color(0xFFFFD700)),
+  onTap: () {
+    Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => SupportScreen(lang: widget.lang),
+    ));
+  },
+),
         ListTile(
   title: const Text('Premium', style: TextStyle(color: Color(0xFFFFD700))),
   leading: const Icon(Icons.workspace_premium, color: Color(0xFFFFD700)),
