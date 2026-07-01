@@ -37,7 +37,7 @@ class AboutScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(children: [
             const SizedBox(height: 20),
-            const Icon(Icons.public, color: Color(0xFFFFD700), size: 70),
+            Image.asset('assets/icons/gtp_icon_512.png', width: 80, height: 80),
             const SizedBox(height: 12),
             const Text('Global Task Planner', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
