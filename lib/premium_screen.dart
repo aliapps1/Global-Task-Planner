@@ -23,6 +23,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
     'ru': {'title': 'Премиум', 'monthly': 'В месяц', 'yearly': 'В год', 'save': 'Скидка 40%', 'restore': 'Восстановить покупку', 'feature1': 'Без рекламы', 'feature2': 'Безлимитные задачи', 'feature3': 'Приоритетная поддержка', 'active': 'Премиум активен ✓', 'buy': 'Купить Премиум'},
     'zh': {'title': '高级版', 'monthly': '每月', 'yearly': '每年', 'save': '节省40%', 'restore': '恢复购买', 'feature1': '去除广告', 'feature2': '无限任务', 'feature3': '优先支持', 'active': '高级版已激活 ✓', 'buy': '获取高级版'},
     'it': {'title': 'Premium', 'monthly': 'Mensile', 'yearly': 'Annuale', 'save': 'Risparmia 40%', 'restore': 'Ripristina acquisto', 'feature1': 'Rimuovi pubblicità', 'feature2': 'Attività illimitate', 'feature3': 'Supporto prioritario', 'active': 'Premium attivo ✓', 'buy': 'Ottieni Premium'},
+  'hi': {'title': 'प्रीमियम', 'monthly': 'मासिक', 'yearly': 'वार्षिक', 'save': '40% बचाएं', 'restore': 'खरीद पुनर्स्थापित करें', 'feature1': 'विज्ञापन हटाएं', 'feature2': 'असीमित कार्य', 'feature3': 'प्राथमिकता समर्थन', 'active': 'प्रीमियम सक्रिय ✓', 'buy': 'प्रीमियम प्राप्त करें'},
+'bn': {'title': 'প্রিমিয়াম', 'monthly': 'মাসিক', 'yearly': 'বার্ষিক', 'save': '40% সাশ্রয়', 'restore': 'ক্রয় পুনরুদ্ধার', 'feature1': 'বিজ্ঞাপন সরান', 'feature2': 'সীমাহীন কাজ', 'feature3': 'অগ্রাধিকার সহায়তা', 'active': 'প্রিমিয়াম সক্রিয় ✓', 'buy': 'প্রিমিয়াম পান'},
   };
 
   Map<String, String> get t => _tr[widget.lang] ?? _tr['en']!;
