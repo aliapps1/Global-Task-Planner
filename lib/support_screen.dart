@@ -41,8 +41,8 @@ class SupportScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(t['thanks']!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 16)),
             const SizedBox(height: 40),
-            _btn(Icons.email, t['email']!, , context),
-            const SizedBox(height: 14),'mailto:Globaltb.app@gmail.com'
+            _btn(Icons.email, t['email']!, 'mailto:Globaltb.app@gmail.com', context),
+            const SizedBox(height: 14),
             _btn(Icons.star, t['rate']!, 'https://play.google.com/store/apps/details?id=com.aliapps1.globaltaskplanner', context),
             const SizedBox(height: 14),
             _btn(Icons.shop, t['play']!, 'https://play.google.com/store/apps/developer?id=Aliapps1', context),
