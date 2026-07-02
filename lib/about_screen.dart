@@ -44,6 +44,8 @@ class AboutScreen extends StatelessWidget {
             Text('${t['version']!}: 1.1.0', style: const TextStyle(color: Colors.white54, fontSize: 14)),
             const SizedBox(height: 4),
             Text('${t['dev']!}: Aliapps1', style: const TextStyle(color: Colors.white54, fontSize: 14)),
+            const SizedBox(height: 8),
+const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13)),
             const SizedBox(height: 40),
             _item(Icons.privacy_tip, t['privacy']!),
             const SizedBox(height: 14),
