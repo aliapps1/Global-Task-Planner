@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 class SupportScreen extends StatelessWidget {
   final String lang;
   const SupportScreen({super.key, required this.lang});
@@ -56,7 +56,12 @@ class SupportScreen extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () async {
+  final uri = Uri.parse(url);
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+},
         icon: Icon(icon),
         label: Text(label),
         style: ElevatedButton.styleFrom(
