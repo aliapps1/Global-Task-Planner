@@ -14,7 +14,7 @@ class SupportScreen extends StatelessWidget {
     'ru': {'title': 'Поддержка', 'email': 'Написать email', 'play': 'Google Play', 'rate': 'Оценить', 'share': 'Поделиться', 'thanks': 'Спасибо за поддержку!'},
     'zh': {'title': '支持', 'email': '发送邮件', 'play': 'Google Play', 'rate': '评分', 'share': '分享', 'thanks': '感谢您的支持！'},
     'it': {'title': 'Supporto', 'email': 'Invia email', 'play': 'Google Play', 'rate': 'Valuta l\'app', 'share': 'Condividi', 'thanks': 'Grazie per il tuo supporto!'},
-    'hi': {'title': 'सहायता', 'email': 'ईमेल भेजें', 'play': 'गूगल प्ले'، 'rate': 'ऐप रेट करें', 'share': 'साझा करें', 'thanks': 'आपके समर्थन के लिए धन्यवाद!'},
+    'hi': {'title': 'सहायता', 'email': 'ईमेल भेजें', 'play': 'गूगल प्ले', 'rate': 'ऐप रेट करें', 'share': 'साझा करें', 'thanks': 'आपके समर्थन के लिए धन्यवाद!'},
 'bn': {'title': 'সহায়তা', 'email': 'ইমেইল পাঠান', 'play': 'গুগল প্লে', 'rate': 'অ্যাপ রেট করুন', 'share': 'শেয়ার করুন', 'thanks': 'আপনার সমর্থনের জন্য ধন্যবাদ!'},
   };
 
