@@ -400,7 +400,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       title: Text(tr['settings'] ?? 'Settings'),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
           ListTile(
-  title: const Text('About', style: TextStyle(color: Colors.white)),
+  title: Text(tr['about'] ?? 'About', style: const TextStyle(color: Colors.white)),
   leading: const Icon(Icons.info_outline, color: Color(0xFFFFD700)),
   onTap: () {
     Navigator.pop(context);
@@ -410,7 +410,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   },
 ),
           ListTile(
-  title: const Text('Support', style: TextStyle(color: Colors.white)),
+  title: Text(tr['support'] ?? 'Support', style: const TextStyle(color: Colors.white)),
   leading: const Icon(Icons.favorite, color: Color(0xFFFFD700)),
   onTap: () {
     Navigator.pop(context);
