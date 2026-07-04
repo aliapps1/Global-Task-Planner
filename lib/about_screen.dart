@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 class AboutScreen extends StatelessWidget {
   final String lang;
   const AboutScreen({super.key, required this.lang});
 
-  final Map<String, Map<String, String>> _tr = const {
+  static const Map<String, Map<String, String>> _tr = {
     'en': {'title': 'About', 'version': 'Version', 'dev': 'Developer', 'privacy': 'Privacy Policy', 'terms': 'Terms of Use'},
     'fa': {'title': 'درباره', 'version': 'نسخه', 'dev': 'توسعه‌دهنده', 'privacy': 'حریم خصوصی', 'terms': 'شرایط استفاده'},
     'ar': {'title': 'حول', 'version': 'الإصدار', 'dev': 'المطور', 'privacy': 'سياسة الخصوصية', 'terms': 'شروط الاستخدام'},
@@ -20,6 +21,13 @@ class AboutScreen extends StatelessWidget {
 
   Map<String, String> get t => _tr[lang] ?? _tr['en']!;
   bool get isRtl => ['ar', 'fa'].contains(lang);
+
+  Future<void> _launch(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,29 +53,21 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Text('${t['dev']!}: Aliapps1', style: const TextStyle(color: Colors.white54, fontSize: 14)),
             const SizedBox(height: 8),
-const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13)),
+            const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13)),
             const SizedBox(height: 40),
-            _item(Icons.privacy_tip, t['privacy']!),
+            _item(Icons.privacy_tip, t['privacy']!, 'https://aliapps1.github.io/Global-Task-Planner/privacy.html'),
             const SizedBox(height: 14),
-            _item(Icons.description, t['terms']!),
+            _item(Icons.description, t['terms']!, 'https://aliapps1.github.io/Global-Task-Planner/terms.html'),
           ]),
         ),
       ),
     );
   }
 
-  Widget _item(IconData icon, String label) => SizedBox(
+  Widget _item(IconData icon, String label, String url) => SizedBox(
     width: double.infinity,
     child: ElevatedButton.icon(
-      onPressed: () async {
-        final url = label == t['privacy']
-            ? 'https://aliapps1.github.io/Global-Task-Planner/privacy.html'
-            : 'https://aliapps1.github.io/Global-Task-Planner/terms.html';
-        final uri = Uri.parse(url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
-      },
+      onPressed: () => _launch(url),
       icon: Icon(icon),
       label: Text(label),
       style: ElevatedButton.styleFrom(
@@ -78,3 +78,4 @@ const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13))
       ),
     ),
   );
+}
