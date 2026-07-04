@@ -60,11 +60,14 @@ const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13))
     width: double.infinity,
     child: ElevatedButton.icon(
       onPressed: () async {
-  final uri = Uri.parse('https://aliapps1.github.io/Global-Task-Planner/privacy.html');
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-},
+        final url = label == t['privacy']
+            ? 'https://aliapps1.github.io/Global-Task-Planner/privacy.html'
+            : 'https://aliapps1.github.io/Global-Task-Planner/terms.html';
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
       icon: Icon(icon),
       label: Text(label),
       style: ElevatedButton.styleFrom(
@@ -75,4 +78,3 @@ const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13))
       ),
     ),
   );
-}
