@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 class AboutScreen extends StatelessWidget {
   final String lang;
   const AboutScreen({super.key, required this.lang});
@@ -59,7 +59,12 @@ const Text('© Aliapps1', style: TextStyle(color: Colors.white38, fontSize: 13))
   Widget _item(IconData icon, String label) => SizedBox(
     width: double.infinity,
     child: ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: () async {
+  final uri = Uri.parse('https://aliapps1.github.io/Global-Task-Planner/privacy.html');
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+},
       icon: Icon(icon),
       label: Text(label),
       style: ElevatedButton.styleFrom(
