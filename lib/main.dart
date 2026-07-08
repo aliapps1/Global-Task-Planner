@@ -157,17 +157,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
     _load();
 
     if (!kIsWeb) {
-      _bannerAd = AdService.createBannerAd();
-      _bannerAd!.listener = BannerAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) setState(() => _bannerLoaded = true);
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-        },
-      );
-    }
-
+      
+_bannerAd = BannerAd(
+  adUnitId: AdService.bannerAdUnitId,
+  size: AdSize.banner,
+  request: const AdRequest(),
+  listener: BannerAdListener(
+    onAdLoaded: (ad) {
+      if (mounted) setState(() => _bannerLoaded = true);
+    },
+    onAdFailedToLoad: (ad, error) {
+      ad.dispose();
+    },
+  ),
+)..load();
     _timer = Timer.periodic(const Duration(seconds: 10), (_) => _checkAlarms());
   }
 
