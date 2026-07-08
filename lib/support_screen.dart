@@ -1,75 +1,131 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-class SupportScreen extends StatelessWidget {
+import 'billing_service.dart';
+
+class SupportScreen extends StatefulWidget {
   final String lang;
   const SupportScreen({super.key, required this.lang});
 
-  final Map<String, Map<String, String>> _tr = const {
-    'en': {'title': 'Support', 'email': 'Send Email', 'play': 'Google Play', 'rate': 'Rate the App', 'share': 'Share App', 'thanks': 'Thank you for your support!'},
-    'fa': {'title': 'پشتیبانی', 'email': 'ارسال ایمیل', 'play': 'گوگل پلی', 'rate': 'امتیاز دهید', 'share': 'اشتراک‌گذاری', 'thanks': 'ممنون از حمایت شما!'},
-    'ar': {'title': 'الدعم', 'email': 'إرسال بريد', 'play': 'جوجل بلاي', 'rate': 'قيّم التطبيق', 'share': 'مشاركة', 'thanks': 'شكراً لدعمك!'},
-    'de': {'title': 'Support', 'email': 'E-Mail senden', 'play': 'Google Play', 'rate': 'App bewerten', 'share': 'App teilen', 'thanks': 'Danke für Ihre Unterstützung!'},
-    'fr': {'title': 'Support', 'email': 'Envoyer email', 'play': 'Google Play', 'rate': 'Noter l\'app', 'share': 'Partager', 'thanks': 'Merci pour votre soutien!'},
-    'pt': {'title': 'Suporte', 'email': 'Enviar email', 'play': 'Google Play', 'rate': 'Avaliar app', 'share': 'Compartilhar', 'thanks': 'Obrigado pelo seu apoio!'},
-    'ru': {'title': 'Поддержка', 'email': 'Написать email', 'play': 'Google Play', 'rate': 'Оценить', 'share': 'Поделиться', 'thanks': 'Спасибо за поддержку!'},
-    'zh': {'title': '支持', 'email': '发送邮件', 'play': 'Google Play', 'rate': '评分', 'share': '分享', 'thanks': '感谢您的支持！'},
-    'it': {'title': 'Supporto', 'email': 'Invia email', 'play': 'Google Play', 'rate': 'Valuta l\'app', 'share': 'Condividi', 'thanks': 'Grazie per il tuo supporto!'},
-    'hi': {'title': 'सहायता', 'email': 'ईमेल भेजें', 'play': 'गूगल प्ले', 'rate': 'ऐप रेट करें', 'share': 'साझा करें', 'thanks': 'आपके समर्थन के लिए धन्यवाद!'},
-'bn': {'title': 'সহায়তা', 'email': 'ইমেইল পাঠান', 'play': 'গুগল প্লে', 'rate': 'অ্যাপ রেট করুন', 'share': 'শেয়ার করুন', 'thanks': 'আপনার সমর্থনের জন্য ধন্যবাদ!'},
-  };
+  @override
+  State<SupportScreen> createState() => _SupportScreenState();
+}
 
-  Map<String, String> get t => _tr[lang] ?? _tr['en']!;
-  bool get isRtl => ['ar', 'fa'].contains(lang);
+class _SupportScreenState extends State<SupportScreen> {
+  final BillingService _billing = BillingService();
+  bool _loading = false;
+
+  Future<void> _support(String productId) async {
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Support purchases are available only on Android through Google Play.')),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      await _billing.init(
+        onPremiumActivated: () {},
+        onError: (msg) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        },
+      );
+
+      await _billing.buy(productId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Thank you for supporting Aliapps1!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+
+    if (mounted) setState(() => _loading = false);
+  }
+
+  @override
+  void dispose() {
+    _billing.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(t['title']!, style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(children: [
-            const SizedBox(height: 20),
-            const Icon(Icons.favorite, color: Color(0xFFFFD700), size: 70),
-            const SizedBox(height: 12),
-            Text(t['thanks']!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 16)),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Support', style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
             const SizedBox(height: 40),
-            _btn(Icons.email, t['email']!, 'mailto:Globaltb.app@gmail.com', context),
-            const SizedBox(height: 14),
-            _btn(Icons.star, t['rate']!, 'https://play.google.com/store/apps/details?id=com.aliapps1.globaltaskplanner', context),
-            const SizedBox(height: 14),
-            _btn(Icons.shop, t['play']!, 'https://play.google.com/store/apps/developer?id=Aliapps1', context),
-          ]),
+            const Icon(Icons.favorite, color: Color(0xFFFFD700), size: 90),
+            const SizedBox(height: 24),
+            const Text(
+              'Thank you for your support!',
+              style: TextStyle(color: Colors.white70, fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 50),
+
+            _supportButton(
+              icon: '☕',
+              text: 'Support \$5',
+              color: const Color(0xFFFF9800),
+              onTap: () => _support(BillingService.support5Id),
+            ),
+
+            const SizedBox(height: 16),
+
+            _supportButton(
+              icon: '❤️',
+              text: 'Support \$10',
+              color: const Color(0xFF00BFA5),
+              onTap: () => _support(BillingService.support10Id),
+            ),
+
+            const SizedBox(height: 24),
+
+            if (kIsWeb)
+              const Text(
+                'Support purchases are available only on Android through Google Play.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white38, fontSize: 13),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _btn(IconData icon, String label, String url, BuildContext context) {
+  Widget _supportButton({
+    required String icon,
+    required String text,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-},
-        icon: Icon(icon),
-        label: Text(label),
+      height: 68,
+      child: ElevatedButton(
+        onPressed: _loading ? null : onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white10,
+          backgroundColor: color,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         ),
+        child: _loading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Text(
+                '$icon  $text',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
       ),
     );
   }
