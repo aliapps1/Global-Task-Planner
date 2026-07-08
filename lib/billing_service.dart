@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class BillingService {
   static const String monthlyId = 'premium_monthly';
   static const String yearlyId = 'premium_yearly';
+  static const String support5Id = 'support_5';
+static const String support10Id = 'support_10';
 
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _sub;
@@ -27,9 +29,11 @@ class BillingService {
     }
 
     final response = await _iap.queryProductDetails({
-      monthlyId,
-      yearlyId,
-    });
+  monthlyId,
+  yearlyId,
+  support5Id,
+  support10Id,
+});
 
     products = response.productDetails;
 
@@ -61,14 +65,19 @@ class BillingService {
   }
 
   Future<void> buy(String productId) async {
-    final product = getProduct(productId);
-    if (product == null) {
-      throw Exception('Product not found: $productId');
-    }
+  final product = getProduct(productId);
+  if (product == null) {
+    throw Exception('Product not found: $productId');
+  }
 
-    final param = PurchaseParam(productDetails: product);
+  final param = PurchaseParam(productDetails: product);
+
+  if (productId == support5Id || productId == support10Id) {
+    await _iap.buyConsumable(purchaseParam: param, autoConsume: true);
+  } else {
     await _iap.buyNonConsumable(purchaseParam: param);
   }
+}
 
   Future<void> restore() async {
     if (kIsWeb) return;
