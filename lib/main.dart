@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 final FlutterLocalNotificationsPlugin notifications =
     FlutterLocalNotificationsPlugin();
 
@@ -26,6 +27,7 @@ Future<void> initNotifications() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initNotifications();
+  await MobileAds.instance.initialize();
   runApp(const GlobalPlannerApp());
 }
 
