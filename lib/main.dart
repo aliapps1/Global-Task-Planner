@@ -152,27 +152,31 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Map<String, String> get tr => _langData[widget.lang] ?? _langData['en']!;
 
     @override
-  void initState() {
-    super.initState();
-    _load();
+void initState() {
+  super.initState();
+  _load();
 
-    if (!kIsWeb) {
-      
-_bannerAd = BannerAd(
-  adUnitId: AdService.bannerAdUnitId,
-  size: AdSize.banner,
-  request: const AdRequest(),
-  listener: BannerAdListener(
-    onAdLoaded: (ad) {
-      if (mounted) setState(() => _bannerLoaded = true);
-    },
-    onAdFailedToLoad: (ad, error) {
-      ad.dispose();
-    },
-  ),
-)..load();
-    _timer = Timer.periodic(const Duration(seconds: 10), (_) => _checkAlarms());
+  if (!kIsWeb) {
+    _bannerAd = BannerAd(
+      adUnitId: AdService.bannerAdUnitId,
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          if (mounted) setState(() => _bannerLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    )..load();
   }
+
+  _timer = Timer.periodic(
+    const Duration(seconds: 10),
+    (_) => _checkAlarms(),
+  );
+}
 
     @override
   void dispose() {
