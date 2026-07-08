@@ -1,21 +1,40 @@
+import 'dart:io';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdService {
-  // Test Banner
+  static String get bannerAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-3940256099942544/6300978111';
+    }
+    return 'ca-app-pub-3940256099942544/2934735716';
+  }
+
+  static String get interstitialAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-3940256099942544/1033173712';
+    }
+    return 'ca-app-pub-3940256099942544/4411468910';
+  }
+
+  static String get rewardedAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-3940256099942544/5224354917';
+    }
+    return 'ca-app-pub-3940256099942544/1712485313';
+  }
+
   static BannerAd createBannerAd() {
     return BannerAd(
-      adUnitId: BannerAd.testAdUnitId,
+      adUnitId: bannerAdUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
-      listener: BannerAdListener(),
+      listener: const BannerAdListener(),
     )..load();
   }
 
-  // Test Interstitial
-  static void loadInterstitial(
-      Function(InterstitialAd) onLoaded) {
+  static void loadInterstitial(Function(InterstitialAd) onLoaded) {
     InterstitialAd.load(
-      adUnitId: InterstitialAd.testAdUnitId,
+      adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: onLoaded,
@@ -24,11 +43,9 @@ class AdService {
     );
   }
 
-  // Test Rewarded
-  static void loadRewarded(
-      Function(RewardedAd) onLoaded) {
+  static void loadRewarded(Function(RewardedAd) onLoaded) {
     RewardedAd.load(
-      adUnitId: RewardedAd.testAdUnitId,
+      adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: onLoaded,
