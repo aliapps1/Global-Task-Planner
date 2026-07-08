@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -28,7 +29,11 @@ Future<void> initNotifications() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initNotifications();
-  await MobileAds.instance.initialize();
+
+  if (!kIsWeb) {
+    await MobileAds.instance.initialize();
+  }
+
   runApp(const GlobalPlannerApp());
 }
 
