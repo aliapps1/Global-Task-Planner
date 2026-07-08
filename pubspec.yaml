@@ -17,10 +17,8 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^10.1.4
   url_launcher: ^6.3.0
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  audioplayers: ^6.1.0
+  android_alarm_manager_plus: ^4.0.7
 
 flutter:
   uses-material-design: true
@@ -28,4 +26,4 @@ flutter:
   assets:
     - assets/icons/gtp_icon_1024.png
     - assets/icons/gtp_icon_512.png
-      android_alarm_manager_plus: ^4.0.7
+    - assets/sounds/gtp_alarm.mp3
