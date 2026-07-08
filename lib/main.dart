@@ -132,6 +132,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
   DateTime _selDate = DateTime.now();
   TimeOfDay? _selTime;
   Timer? _timer;
+      BannerAd? _bannerAd;
+  bool _bannerLoaded = false;
 
   final Map<String, Map<String, String>> _langData = {
     'en': {'n':'English','l':'Language','app':'Global Task Planner','p':'Plan for','h':'High','m':'Normal','i':'Idea','task':'Task','project':'Project','all':'All','done':'Done','search':'Search','repeat':'Repeat','none':'None','daily':'Daily','weekly':'Weekly','monthly':'Monthly','save':'Save','edit':'Edit','cancel':'Cancel','note':'Note','total':'Total','completed':'Completed','pending':'Pending','empty':'No tasks yet','today':'Today','tomorrow':'Tomorrow','week':'This Week','overdue':'Overdue','settings':'Settings','export':'Export Backup','import':'Import Backup','clear':'Clear Data','copy':'Backup copied','paste':'Paste backup text','ok':'OK','about':'About','support':'Support'},
@@ -149,15 +151,29 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   Map<String, String> get tr => _langData[widget.lang] ?? _langData['en']!;
 
-  @override
+    @override
   void initState() {
     super.initState();
     _load();
+
+    if (!kIsWeb) {
+      _bannerAd = AdService.createBannerAd();
+      _bannerAd!.listener = BannerAdListener(
+        onAdLoaded: (ad) {
+          if (mounted) setState(() => _bannerLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      );
+    }
+
     _timer = Timer.periodic(const Duration(seconds: 10), (_) => _checkAlarms());
   }
 
-  @override
+    @override
   void dispose() {
+    _bannerAd?.dispose();
     _timer?.cancel();
     _title.dispose();
     _search.dispose();
@@ -478,6 +494,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
+              bottomNavigationBar: (!kIsWeb && _bannerLoaded && _bannerAd != null)
+          ? SizedBox(
+              height: _bannerAd!.size.height.toDouble(),
+              width: _bannerAd!.size.width.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            )
+          : null,
       appBar: AppBar(
         toolbarHeight: 105,
         backgroundColor: Colors.transparent,
