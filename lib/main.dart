@@ -688,3 +688,18 @@ const SizedBox(height: 8),
     await _alarmPlayer.stop();
   });
 }
+    Future<void> _startAlarmSound() async {
+  await _alarmPlayer.stop();
+
+  await _alarmPlayer.play(
+    AssetSource('sounds/gtp_alarm.mp3'),
+  );
+
+  _alarmStopTimer?.cancel();
+  _alarmStopTimer = Timer(const Duration(minutes: 1), () async {
+    await _alarmPlayer.stop();
+  });
+}
+
+}
+    
