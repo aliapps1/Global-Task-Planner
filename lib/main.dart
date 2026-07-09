@@ -672,34 +672,27 @@ const SizedBox(height: 8),
       subtitle: Text('${_date(t.date)}${t.time == null ? '' : '  ${t.time}'}  • ${tr[t.type] ?? t.type}${t.repeat == 'none' ? '' : '  • ${tr[t.repeat] ?? t.repeat}'}${t.note.isEmpty ? '' : '\n${t.note}'}', style: const TextStyle(fontSize: 10, color: Colors.white38)),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         IconButton(icon: const Icon(Icons.edit, color: Colors.white54, size: 20), onPressed: () => _edit(i)),
-        IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 20), onPressed: () { setState(() => _tasks.removeAt(i)); _save(); }),
+               IconButton(
+          icon: const Icon(Icons.delete_sweep, color: Colors.redAccent, size: 20),
+          onPressed: () {
+            setState(() => _tasks.removeAt(i));
+            _save();
+          },
+        ),
       ]),
     ),
   );
-    Future<void> _startAlarmSound() async {
-  await _alarmPlayer.stop();
 
-  await _alarmPlayer.play(
-    AssetSource('sounds/gtp_alarm.mp3'),
-  );
-
-  _alarmStopTimer?.cancel();
-  _alarmStopTimer = Timer(const Duration(minutes: 1), () async {
+  Future<void> _startAlarmSound() async {
     await _alarmPlayer.stop();
-  });
-}
-    Future<void> _startAlarmSound() async {
-  await _alarmPlayer.stop();
 
-  await _alarmPlayer.play(
-    AssetSource('sounds/gtp_alarm.mp3'),
-  );
+    await _alarmPlayer.play(
+      AssetSource('sounds/gtp_alarm.mp3'),
+    );
 
-  _alarmStopTimer?.cancel();
-  _alarmStopTimer = Timer(const Duration(minutes: 1), () async {
-    await _alarmPlayer.stop();
-  });
-}
-
-}
-    
+    _alarmStopTimer?.cancel();
+    _alarmStopTimer = Timer(const Duration(minutes: 1), () async {
+      await _alarmPlayer.stop();
+    });
+  }
+} 
