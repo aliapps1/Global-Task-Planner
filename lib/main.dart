@@ -4,6 +4,7 @@ import 'support_screen.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -134,6 +135,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Timer? _timer;
       BannerAd? _bannerAd;
   bool _bannerLoaded = false;
+    
+    final AudioPlayer _alarmPlayer = AudioPlayer();
+Timer? _alarmStopTimer;
 
   final Map<String, Map<String, String>> _langData = {
     'en': {'n':'English','l':'Language','app':'Global Task Planner','p':'Plan for','h':'High','m':'Normal','i':'Idea','task':'Task','project':'Project','all':'All','done':'Done','search':'Search','repeat':'Repeat','none':'None','daily':'Daily','weekly':'Weekly','monthly':'Monthly','save':'Save','edit':'Edit','cancel':'Cancel','note':'Note','total':'Total','completed':'Completed','pending':'Pending','empty':'No tasks yet','today':'Today','tomorrow':'Tomorrow','week':'This Week','overdue':'Overdue','settings':'Settings','export':'Export Backup','import':'Import Backup','clear':'Clear Data','copy':'Backup copied','paste':'Paste backup text','ok':'OK','about':'About','support':'Support'},
@@ -184,6 +188,10 @@ void initState() {
     _timer?.cancel();
     _title.dispose();
     _search.dispose();
+      
+      _alarmStopTimer?.cancel();
+_alarmPlayer.dispose();
+      
     super.dispose();
   }
 
@@ -353,6 +361,7 @@ void initState() {
     ),
   ),
 );
+          await _startAlarmSound();
         HapticFeedback.vibrate();
         showDialog(context: context, barrierDismissible: false, builder: (_) => AlertDialog(
           backgroundColor: Colors.grey[900],
@@ -667,4 +676,15 @@ const SizedBox(height: 8),
       ]),
     ),
   );
+    Future<void> _startAlarmSound() async {
+  await _alarmPlayer.stop();
+
+  await _alarmPlayer.play(
+    AssetSource('sounds/gtp_alarm.mp3'),
+  );
+
+  _alarmStopTimer?.cancel();
+  _alarmStopTimer = Timer(const Duration(minutes: 1), () async {
+    await _alarmPlayer.stop();
+  });
 }
